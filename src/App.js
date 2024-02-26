@@ -6,6 +6,7 @@ import SideBar from './SideBar/SideBar';
 import Table from './Table/Table';
 import { DonutChart } from './Charts/DonutChart';
 import { LineChart } from './Charts/LineChart';
+import DetailedReport from './Report/DetailedReport';
 function App() {
   const data = [{type:"Break"},{type:"Succ"},{type:"Hold"},{type:"Stop"},{type:"No-usage"}]
   const filterData = data.filter((i)=>i.data !== 0)
@@ -31,6 +32,8 @@ function App() {
           </div>
         <Table/>
       </div>
+    <DetailedReport/>
+
     </div>
   );
 }

@@ -2,6 +2,7 @@ import React from "react";
 import TableItem from "../TableItem/TableItem";
 import TableTitleItem from "../TableItem/TableTitleItem";
 import s from './Table.module.css'
+import DetailedReport from "../Report/DetailedReport";
 const Table = () => {
     const data = [{
         title:"DOOSAN 2600LY",
@@ -49,10 +50,11 @@ const Table = () => {
         loadPercentage:45
     }]
   return (
+    <>
     <div>
         <h1 className={s.title}>Перечень и загрузка оборудования</h1>
       <div></div>
-      <div>
+      <div style={{position: "relative"}}>
         <TableTitleItem
           title={"НАЗВАНИЕ"}
           serial={"СЕРИЙНЫЙ №"}
@@ -75,6 +77,7 @@ const Table = () => {
     })}
       </div>
     </div>
+    </>
   );
 };
 

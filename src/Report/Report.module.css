@@ -1,0 +1,51 @@
+.modalContainer{
+    width:60%;
+    display: flex;
+    position: absolute;
+    background-color:#FFFFFF;
+    width: 60%;
+    height:80%;
+    top:10%;
+    left:25%;
+    flex-direction: column;
+    padding:24px;
+    box-sizing: border-box;
+}
+.text{
+    font-size:12px;
+    text-align:left;
+    padding-bottom:16px;
+    padding-top:2px;
+}
+.progress_cell{
+    margin-left:24px;
+    flex:1;
+    justify-content: center;
+    flex-direction: column;
+}
+.load_time{
+    width:95%;
+    display: flex;
+    justify-content:space-between;
+}
+.modalBackground{
+    width:100vw;
+    height:100vh;
+    background-color:#38383840;
+    position: absolute;
+    top:0;
+    z-index: 99;
+    overflow: hidden;
+}
+.title{
+    text-align: left;
+    font-size:18px;
+}
+.detailProgress{
+    display: flex;
+    flex-direction: row;
+}
+.detailTime{
+    font-size:14px;
+    color:#00203399;
+}
