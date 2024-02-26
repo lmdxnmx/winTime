@@ -1,0 +1,83 @@
+.sideBarContainer{
+    background-color: #10193A;
+    height: calc(100vh - 70px);
+    position:fixed;
+    left:0;
+    top:70px;
+    display: flex;
+    flex-direction:column;
+    justify-content: space-between;
+    width: 64px;
+}
+.sideBarSettings{
+    display:flex;
+    flex-direction: column;
+    padding-left: 24px;
+}
+.sideBarSettings div{
+  padding-bottom:25px;
+  cursor: pointer;
+}
+.sideBarSettings div:nth-child(1){
+    padding-top:33px;
+}
+.sideBarSettings div:nth-last-child(1){
+    padding-top:33px;
+}
+.sideBarDraw{
+    display:flex;
+    flex-direction: column;
+    align-items: center;
+}
+.sideBarDraw div:nth-child(2){
+    padding-bottom:31px;
+    cursor: pointer;
+}
+.sideBarDraw div:nth-child(1){
+    padding-bottom:28px;
+    cursor: pointer;
+}
+.sideBarSettings div{
+ display:flex;
+ align-items: center;
+}
+.sideBarSettings div span{
+    color:#FFF;
+    font-size: 16px;
+    line-height:0px;
+    font-weight: 500;
+    padding-left: 8px;
+    animation: textVisible 1.5s forwards;
+    white-space:nowrap;
+   }
+  
+
+@keyframes expandWidth {
+    from {
+      width: 64px; 
+    }
+    to {
+      width: 224px; 
+    }
+  }
+  
+  @keyframes collapseWidth {
+    from {
+      width: 224px; 
+    }
+    to {
+      width: 64px;
+    }
+  }
+  @keyframes textVisible {
+    from {opacity: 0;}
+    to{opacity: 1;}
+  }
+  .expanding {
+    animation: expandWidth 0.4s forwards;
+  }
+  
+  .collapsing {
+    animation: collapseWidth 0.4s forwards;
+  }
+  

@@ -1,0 +1,9 @@
+.container{
+    width: 95%;
+     height: 20px;
+      background-color:#F7F8F9;
+     border-radius: 10px; 
+     overflow: hidden;
+     margin-left:4;
+     display: flex;
+}

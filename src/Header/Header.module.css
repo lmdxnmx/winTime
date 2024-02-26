@@ -1,0 +1,26 @@
+.headerContainer{
+    background-color: #11193A;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content:space-between;
+    align-items: center;
+    padding: 15px 0px;
+}
+.headerLogo{
+    padding-left:20px;
+}
+.headerAvatar{
+    display: flex;
+    align-items: center;
+    padding-right:20px;
+}
+.ring{
+    width:15px;
+    height: 18px;
+    padding-right:27px;
+}
+.avatar{
+    width:40px;
+    height: 40px;
+}

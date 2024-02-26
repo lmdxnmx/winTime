@@ -1,0 +1,58 @@
+.itemCointainer{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+}
+.cell{
+    height: 48px;
+    display: flex;
+    color:#323E48;
+    border: 1px solid #CFD7DD;
+    border-left:0;
+    height: 48px;
+    align-items: center;
+    font-size:14px;
+    font-weight: 600;
+    color:#323E48;
+    box-sizing: border-box;
+}
+.title_cell{
+    flex:1;
+    padding-left:16px;
+}
+.serial_cell{
+    flex:1;
+    justify-content: center;
+}
+.programm_cell{
+    flex:1;
+    justify-content: center;
+}
+.progress_cell{
+    flex:2;
+    justify-content: center;
+    flex-direction: column;
+}
+.sum_cell{
+    flex:0.5;
+    justify-content: center;
+}
+.loadPercentage_cell{
+    flex:0.5;
+    justify-content: center;
+}
+.title_cell span{
+    font-size:14px;
+    font-weight: 600;
+    color:#77cb10;
+}
+.load_time{
+    width:95%;
+    display: flex;
+    justify-content:space-between;
+}
+.load_time span{
+    font-size:12px;
+    color:#002033;
+    font-weight: 400;
+}
