@@ -8,6 +8,7 @@
     flex-direction:column;
     justify-content: space-between;
     width: 64px;
+    z-index: 99;
 }
 .sideBarSettings{
     display:flex;

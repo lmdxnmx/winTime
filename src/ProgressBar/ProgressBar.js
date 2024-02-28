@@ -1,7 +1,6 @@
 import React from 'react';
 import s from "./ProgressBar.module.css"
 const ProgressBar = ({label}) => {
- console.log(label)
   return (
     <div className={s.container}>
       {label?.map((i)=>{
