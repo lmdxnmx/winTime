@@ -1,16 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Table } from '@consta/uikit/Table';
 import ProgressBar from '../ProgressBar/ProgressBar';
 import s from "./../TableItem/TableItem.module.css"
-import {
-    TableTextFilter,
-    TableNumberFilter,
-    TableChoiceGroupFilter,
-} from '@consta/uikit/Table';
+import DropDownMenu from '../DropDownMenu/DropDownMenu';
+
+
 
 export const TableConsta = () => {
-    const [value, setValue] = useState("");
-    const [rows,setRows] = useState([
+    const refMachines = useRef(null);
+    const refDate = useRef(null);
+    const refChange = useRef(null);
+    const refTime = useRef(null);
+    const [value, setValue] = useState([{ label: "DOOSAN 2600LY", active: true, id: 1 }, { label: "DOOSAN 2700LY", active: true, id: 2 },]);
+
+    const [rows, setRows] = useState([
         {
             name: 'DOOSAN 2600LY',
             serial: 'NS:152667dl',
@@ -48,7 +51,7 @@ export const TableConsta = () => {
             sum: 124230
         },
     ]);
-
+    const [filteredRows, setFilteredRows] = useState(rows)
     const columns = [
         {
             title: 'Название',
@@ -110,14 +113,13 @@ export const TableConsta = () => {
         },
     ];
  
-    useEffect(()=>{
-       if(value !== ""){
-        const filtered = rows.filter((i)=>i.name === value)
-        setRows(filtered)
-       }
-    },[value])
     return (<div>
-        <div><div onClick={()=>setValue("DOOSAN 2700LY")}>SET</div></div>
-        <Table zebraStriped='odd'  rows={rows} columns={columns} borderBetweenRows={true} borderBetweenColumns={true} />
+        <div className={s.filterTable}>
+          <DropDownMenu  width={352} refs={refMachines} name={"machines"} label={"Все станки"}/>
+          <DropDownMenu width={98} refs={refDate} name={"date"} label={"Сегодня"}/>
+          <DropDownMenu width={123} refs={refChange} name={"change"} label={"Все смены"}/>
+          <DropDownMenu width={140} refs={refTime} name={"time"} label={"00:00 - 07:59"}/>
+        </div>
+        <Table zebraStriped='odd' rows={filteredRows} columns={columns} borderBetweenRows={true} borderBetweenColumns={true} />
     </div>);
 };

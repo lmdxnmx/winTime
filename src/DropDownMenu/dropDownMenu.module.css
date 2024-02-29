@@ -1,0 +1,38 @@
+.menu{
+    overflow: auto;
+    max-height:290px;
+    width: 700px;
+}
+.filterButton{
+    border:1px solid #00426947;
+    border-radius: 4px;
+    padding:0px, 0px, 0px, 8px;
+    margin-right:24px;
+    position: relative;
+    height: 32px;
+}
+.filterLabel{
+    padding:8px;
+    color:#00203359;
+    font-size: 14px;
+    text-align: left;
+}
+.dropDown{
+    position: absolute;
+    z-index: 99;
+    width:100%;
+    background-color: #FFF;
+    top:32px;
+}
+.dropDownItem{
+ display: flex;
+ padding: 8px;
+ background-color: #FFF;
+}
+.dropDownItem:hover{
+    background-color: #F6F6F6;
+}
+.dropDownCheckbox{
+    margin-left:12px;
+    margin-right:8px;
+}
