@@ -1,37 +1,55 @@
-import React,{useState, useRef} from 'react'
-import s from "./dropDownMenu.module.css"
+import React, { useState, useRef, useEffect } from 'react';
+import s from "./dropDownMenu.module.css";
 import { Checkbox } from '@consta/uikit/Checkbox';
-import {ContextMenu} from '@consta/uikit/ContextMenu'
 
-const DropDownMenu = ({label,name,refs, width}) => {
-    const [value, setValue] = useState([{ label: "DOOSAN 2600LY", active: true, id: 1 }, { label: "DOOSAN 2700LY", active: true, id: 2 },]);
-    const [isOpen, setIsOpen] = useState("");
-    const getItemOnClick = (item) => {
-        setValue(prevValue=> prevValue.map(prevItem => prevItem.id === item.id ? {...prevItem, active : !prevItem.active} : prevItem))
+const DropDownMenu = ({ label, refs, width, isOpen, setIsOpen }) => {
+    const [valueMachines, setValueMachines] = useState([
+        { label: "DOOSAN 2600LY", active: true, id: 1 }, 
+        { label: "DOOSAN 2700LY", active: true, id: 2 },
+    ]);
+    const [valueChanges, setValueChanges] = useState([
+        { label: "1 смена", active: true, id: 1 }, 
+        { label: "2 смена", active: true, id: 2 },
+        { label: "3 смена", active: true, id: 3 }
+    ]);
+
+    const handleMenuClick = (event) => {
+        event.stopPropagation();
     };
-    function renderLeftSide(item) {
-        return <Checkbox size="m" align='center' view='primary' checked={item.active} />;
-    }
-  return (
-   <div style={{width:width}} className={s.filterButton}>
-       <div className={s.filterLabel} ref={refs} onClick={() => {
-                if (isOpen !== name)
-                    setIsOpen(name)
-                else {
-                    setIsOpen("")
-                }
-            }}>
+
+    const getItemMachinesOnClick = (item) => {
+        setValueMachines(prevValue => prevValue.map(prevItem => prevItem.id === item.id ? { ...prevItem, active: !prevItem.active } : prevItem))
+    };
+
+    const getItemChangesOnClick = (item) => {
+        setValueChanges(prevValue => prevValue.map(prevItem => prevItem.id === item.id ? { ...prevItem, active: !prevItem.active } : prevItem))
+    };
+
+    return (
+        <div ref={refs} style={{ width: width }} className={s.filterButton}>
+            <div className={s.filterLabel} onClick={() => setIsOpen(!isOpen)}>
                 {label}
             </div>
-    <div className={s.dropDown} style={{display:isOpen === name ?"" : "none"}}>
-        {value.map((i)=>{
-            return(
-                <div onClick={()=>getItemOnClick(i)} className={s.dropDownItem}><Checkbox checked={i.active} className={s.dropDownCheckbox}/><span>{i.label}</span></div>
-            )
-        })}
-    </div>
-   </div>
-  )
+            <div  className={s.dropDown} style={{ display: isOpen === true  ? "" : "none" }} onClick={handleMenuClick}>
+                {label === "Все станки" && 
+                    valueMachines.map((item) => (
+                        <div key={item.id} onClick={() => getItemMachinesOnClick(item)} className={s.dropDownItem}>
+                            <Checkbox checked={item.active} className={s.dropDownCheckbox} />
+                            <span>{item.label}</span>
+                        </div>
+                    ))
+                }
+                {label === "Все смены" && 
+                    valueChanges.map((item) => (
+                        <div key={item.id} onClick={() => getItemChangesOnClick(item)} className={s.dropDownItemChanges}>
+                            <Checkbox checked={item.active} className={s.dropDownCheckbox} />
+                            <span>{item.label}</span>
+                        </div>
+                    ))
+                }
+            </div>
+        </div>
+    )
 }
 
-export default DropDownMenu
+export default DropDownMenu;

@@ -11,6 +11,7 @@
     position: relative;
     height: 32px;
 }
+
 .filterLabel{
     padding:8px;
     color:#00203359;
@@ -22,12 +23,18 @@
     z-index: 99;
     width:100%;
     background-color: #FFF;
-    top:32px;
+    top:35px;
 }
 .dropDownItem{
  display: flex;
  padding: 8px;
  background-color: #FFF;
+}
+.dropDownItemChanges{
+    display: flex;
+    padding: 8px;
+    background-color: #FFF;
+    min-width: 200px;
 }
 .dropDownItem:hover{
     background-color: #F6F6F6;

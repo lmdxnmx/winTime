@@ -3,16 +3,17 @@ import { Table } from '@consta/uikit/Table';
 import ProgressBar from '../ProgressBar/ProgressBar';
 import s from "./../TableItem/TableItem.module.css"
 import DropDownMenu from '../DropDownMenu/DropDownMenu';
-
-
-
+import { DatePicker } from '@consta/uikit/DatePicker';
 export const TableConsta = () => {
-    const refMachines = useRef(null);
-    const refDate = useRef(null);
-    const refChange = useRef(null);
-    const refTime = useRef(null);
-    const [value, setValue] = useState([{ label: "DOOSAN 2600LY", active: true, id: 1 }, { label: "DOOSAN 2700LY", active: true, id: 2 },]);
 
+    const [dateValue,setDateValue] = useState(null);
+    const [timeValue,setTimeValue] = useState(null);
+    const [isOpen, setIsOpen] = useState(false);
+    const [isOpenChanges,setIsOpenChanges] = useState(false);
+    const [isOpenMachines,setIsOpenMachines] = useState(false);
+
+    const refDropMachines = useRef(null);
+    const refDropChanges = useRef(null);
     const [rows, setRows] = useState([
         {
             name: 'DOOSAN 2600LY',
@@ -112,13 +113,38 @@ export const TableConsta = () => {
             width: 130
         },
     ];
- 
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (refDropMachines.current && !refDropMachines.current.contains(event.target)) {
+                setIsOpenMachines(false);
+            }
+        };
+
+        document.addEventListener("click", handleClickOutside);
+
+        return () => {
+            document.removeEventListener("click", handleClickOutside);
+        };
+    }, []);
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (refDropChanges.current && !refDropChanges.current.contains(event.target)) {
+                setIsOpenChanges(false);
+            }
+        };
+
+        document.addEventListener("click", handleClickOutside);
+
+        return () => {
+            document.removeEventListener("click", handleClickOutside);
+        };
+    }, []);
     return (<div>
         <div className={s.filterTable}>
-          <DropDownMenu  width={352} refs={refMachines} name={"machines"} label={"Все станки"}/>
-          <DropDownMenu width={98} refs={refDate} name={"date"} label={"Сегодня"}/>
-          <DropDownMenu width={123} refs={refChange} name={"change"} label={"Все смены"}/>
-          <DropDownMenu width={140} refs={refTime} name={"time"} label={"00:00 - 07:59"}/>
+          <DropDownMenu width={352} refs={refDropMachines} label={"Все станки"} isOpen={isOpenMachines} setIsOpen={setIsOpenMachines}/>
+          <DatePicker className={s.datePicker} size="s" placeholder="Сегодня" dropdownOpen={isOpen} type="date" value={dateValue} onChange={setDateValue} />
+          <DropDownMenu width={123} label={"Все смены"} refs={refDropChanges}  isOpen={isOpenChanges} setIsOpen={setIsOpenChanges}/>
+          <DatePicker className={s.datePicker} size="s" placeholder="Сегодня" dropdownOpen={isOpen} type="time" value={timeValue} onChange={setTimeValue} />
         </div>
         <Table zebraStriped='odd' rows={filteredRows} columns={columns} borderBetweenRows={true} borderBetweenColumns={true} />
     </div>);

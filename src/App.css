@@ -41,8 +41,8 @@
   margin-left:8px;
  
 }
-.Popover.ContextMenuLevel-Desktop{
-  width:900px;
+.TextField-Body .TextField-InputContainer_view_default {
+  padding:1px var(--input-space);
 }
 .App-logo {
   height: 40vmin;
