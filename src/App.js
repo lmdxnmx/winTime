@@ -24,6 +24,8 @@ function App() {
             </div>
             <div className="lineContainer">
               <div style={{ display: 'flex' }}>
+                <div className='lineCategory' style={{cursor:'pointer'}}><span style={{color:"#00203399", fontSize:20}}>+</span></div>
+       
                 <div style={{ backgroundImage: "linear-gradient(to right, #32CD32 6px, transparent 6px)" }} className='lineCategory'>Работало</div>
                 <div style={{ backgroundImage: "linear-gradient(to right, #FF6347 6px, transparent 6px)" }} className='lineCategory'>Авария</div>
                 <div style={{ backgroundImage: "linear-gradient(to right, #FFBE0080 6px, transparent 6px)" }} className='lineCategory'>Не работало</div>
