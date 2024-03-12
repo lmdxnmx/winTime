@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Table } from '@consta/uikit/Table';
 import ProgressBar from '../ProgressBar/ProgressBar';
+import { Bullet } from '@consta/charts/Bullet';
+
 import s from "./../TableItem/TableItem.module.css"
 import DropDownMenu from '../DropDownMenu/DropDownMenu';
 import { DatePicker } from '@consta/uikit/DatePicker';
@@ -52,6 +54,7 @@ export const TableConsta = () => {
             sum: 124230
         },
     ]);
+
     const [filteredRows, setFilteredRows] = useState(rows)
     const columns = [
         {
@@ -94,7 +97,22 @@ export const TableConsta = () => {
                         <span>23:59</span>
                     </div>
                 </div>
-
+            //     <Bullet
+            //     style={{height:35}}
+            //     data={data}
+            //     measureField="measures"
+            //     rangeField="ranges"
+            //     targetField="target"
+            //     xField="title"
+            //     label={{
+            //       measure: {
+            //         position: 'middle',
+            //         style: {
+            //           fill: '#fff',
+            //         },
+            //       },
+            //     }}
+            //   />
             ),
             width: 412
         },
