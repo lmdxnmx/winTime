@@ -21,6 +21,15 @@
   margin-right:24px;
   box-sizing: border-box;
 }
+.title{
+  text-align: left;
+  font-size:18px;
+}
+.onlineItemsWrapper{
+  display: flex;
+  flex-wrap: wrap;
+  max-width: 95%;
+}
 .lineContainer{
   width:100%;
   height:160px;

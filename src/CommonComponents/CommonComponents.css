@@ -1,0 +1,19 @@
+.verticalProgressBar{
+    height:80px;
+    width:40%;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+}
+.verticalProgressBarVal{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 15%;
+}
+.verticalProgressBarVal span{
+    font-size: 10px;
+    font-weight:500;
+    color:#000;
+}

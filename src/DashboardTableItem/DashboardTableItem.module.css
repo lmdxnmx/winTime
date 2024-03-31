@@ -1,0 +1,29 @@
+.itemContainer{
+    background: #ECF1F4;
+    box-shadow: 0px 2px 8px 0px #00203329;
+    width: 120px;
+    height: 147px;
+    border-radius:8px;
+    display: flex;
+    flex-direction:column;
+    padding-left: 8px;
+    padding-right: 8px;
+    box-shadow: 0px 2px 8px 0px #00203329;
+}
+.itemName{
+    color:#002033;
+    font-size: 12px;
+    font-weight:600;
+    padding-top: 8px;
+    padding-bottom:4px;
+}
+.itemPercent{
+    font-size:12px;
+    color:#77CB10;
+    font-weight:700;
+}
+.barsWrapper{
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+}

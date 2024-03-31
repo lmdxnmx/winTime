@@ -27,7 +27,9 @@ const DropDownMenu = ({ label, refs, width, isOpen, setIsOpen }) => {
 
     return (
         <div ref={refs} style={{ width: width }} className={s.filterButton}>
-            <div className={s.filterLabel} onClick={() => setIsOpen(!isOpen)}>
+            <div className={s.filterLabel} onClick={() => {
+                console.log(isOpen)
+                setIsOpen(!isOpen)}}>
                 {label}
             </div>
             <div  className={s.dropDown} style={{ display: isOpen === true  ? "" : "none" }} onClick={handleMenuClick}>
