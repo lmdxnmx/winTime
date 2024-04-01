@@ -11,7 +11,6 @@
 }
 .donutContainer{
   width:170px;
-  height:160px;
   display: flex;
   flex-direction:column;
   justify-content:center;
@@ -23,7 +22,6 @@
 }
 .lineContainer{
   width:100%;
-  height:160px;
   border-radius:5px;
   box-shadow: 0px 2px 6px 0px #A6A6A640;
   padding:12px;
@@ -33,13 +31,12 @@
   display: flex;
   margin-bottom:24px;
 }
-.lineCategory{
-  box-shadow: 0px 0px 0px 1px #00416633;
-  border-radius: 4px;
-  box-sizing: border-box;
-  padding:5px 12px;
-  margin-left:8px;
- 
+.comboBox{
+  display: none;
+}
+.title{
+  text-align: left;
+  font-size:18px;
 }
 .TextField-Body .TextField-InputContainer_view_default {
   padding:1px var(--input-space);

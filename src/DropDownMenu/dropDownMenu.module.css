@@ -34,6 +34,8 @@
     display: flex;
     padding: 8px;
     background-color: #FFF;
+    display: flex;
+    align-items: center;
     min-width: 200px;
 }
 .dropDownItem:hover{
@@ -42,4 +44,10 @@
 .dropDownCheckbox{
     margin-left:12px;
     margin-right:8px;
+}
+.dropDownCircle{
+    width: 17.5px;
+    height: 17.5px;
+    margin-right:9.25px;
+    border-radius: 50%;
 }

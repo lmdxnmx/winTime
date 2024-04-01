@@ -4,6 +4,7 @@ import TableTitleItem from "../TableItem/TableTitleItem";
 import s from './Table.module.css'
 import DetailedReport from "../Report/DetailedReport";
 const Table = () => {
+  const [value, setValue] = useState([{ label: "DOOSAN 2600LY", active: true, id: 1 }, { label: "DOOSAN 2700LY", active: true, id: 2 },]);
     const data = [{
         title:"DOOSAN 2600LY",
         serial:"NS:152667dl",
@@ -72,6 +73,7 @@ const Table = () => {
             loadDay={i.loadDay}
             sum={i.sum}
             loadPercentage={i.loadPercentage}
+         
           />
         )
     })}
