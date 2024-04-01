@@ -1,39 +1,33 @@
-import React,{useState} from 'react';
+import React from 'react';
 import logo from './logo.svg';
 import './App.css';
-import ProgressBar from './ProgressBar/ProgressBar';
 import Header from './Header/Header';
 import SideBar from './SideBar/SideBar';
-import {TableConsta} from './Table/TableConsta';
-import { DonutChart } from './Charts/DonutChart';
-import { LineChart } from './Charts/LineChart';
 import { Theme, presetGpnDefault } from '@consta/uikit/Theme';
-import CategoryChoose from './CategoryChoose/CategoryChoose';
 function App() {
-  const [categoriesColor,setCategoriesColors] = useState([
-    { label: "Работало",color:"#32CD32" ,active: true, id: 1 }, 
-    { label: "Авария",color:"#FF8C00", active: true, id: 2 },
-    { label: "Не работало",color:"#FFD700", active: true, id: 3 },
-    { label: "Обслуживание",color:"#4682B4", active: true, id: 4 },
-    { label: "Необоснованный простой",color:"#FF69B4", active: false, id: 5 },
-    { label: "Поломка инструмента",color:"#008B8B", active: false, id: 6 },
-    { label: "Ручной режим инструмента",color:"#FF8C00", active: false, id: 7 },
-]); 
+  const data = [{ type: "Break" }, { type: "Succ" }, { type: "Hold" }, { type: "Stop" }, { type: "No-usage" }]
+  const filterData = data.filter((i) => i.data !== 0)
   return (
     <Theme preset={presetGpnDefault}>
       <div className="App">
         <Header />
         <SideBar />
         <div className="content">
-        <h1 className="title">Перечень и загрузка оборудования</h1>
           <div className="chartContainer">
-            <div style={{height:160 +(40 * categoriesColor.filter((i)=>i.active === true).length)}} className="donutContainer">
+            <div className="donutContainer">
               <h3 style={{ fontSize: 11 }}>Загрузка всех станков</h3>
               <DonutChart />
             </div>
-            <div className="lineContainer" style={{height:160 +(40 * categoriesColor.filter((i)=>i.active === true).length)}}>
-            <CategoryChoose value={categoriesColor} setValue={setCategoriesColors}/>
-              <LineChart categoriesColor={categoriesColor}/>
+            <div className="lineContainer">
+              <div style={{ display: 'flex' }}>
+                <div className='lineCategory' style={{cursor:'pointer'}}><span style={{color:"#00203399", fontSize:20}}>+</span></div>
+       
+                <div style={{ backgroundImage: "linear-gradient(to right, #32CD32 6px, transparent 6px)" }} className='lineCategory'>Работало</div>
+                <div style={{ backgroundImage: "linear-gradient(to right, #FF6347 6px, transparent 6px)" }} className='lineCategory'>Авария</div>
+                <div style={{ backgroundImage: "linear-gradient(to right, #FFBE0080 6px, transparent 6px)" }} className='lineCategory'>Не работало</div>
+                <div style={{ backgroundImage: "linear-gradient(to right, #4682B4 6px, transparent 6px)" }} className='lineCategory'>Обслуживание</div>
+              </div>
+              <LineChart />
             </div>
           </div>
           <TableConsta />
