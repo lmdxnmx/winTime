@@ -8,6 +8,7 @@ import { Routes, Route, Outlet } from "react-router-dom";
 import OnlineChartPage from './Pages/OnlineChartPage';
 import Layout from './HOC/Layout';
 import DashboardsPage from './Pages/DashboardsPage';
+import OnlineItemPage from './Pages/OnlineItemPage';
 function App() {
   return (
     <Theme preset={presetGpnDefault}>
@@ -25,6 +26,14 @@ function App() {
           element={
             <Layout>
               <OnlineChartPage />
+            </Layout>
+          }
+        />
+              <Route
+          path="online/:id"
+          element={
+            <Layout>
+              <OnlineItemPage />
             </Layout>
           }
         />
