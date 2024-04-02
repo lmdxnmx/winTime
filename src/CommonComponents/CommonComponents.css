@@ -17,3 +17,12 @@
     font-weight:500;
     color:#000;
 }
+.btnBlock{
+    border: 1px solid #00426947;
+    border-radius: 4px;
+    padding: 12px;
+    margin-right: 16px;
+    margin-bottom:16px;
+    color: #00395CCC;
+    font-size: 16px;
+}

@@ -70,6 +70,7 @@
 .onlineItemContainer{
     display: flex;
     flex-direction:row;
+    width: 100%;
 }
 .onlineItemCentWrapper{
     display: flex;
@@ -80,6 +81,8 @@
     padding:12px;
     text-align: left;
     box-sizing: border-box;
+    width:100%;
+    
 }
 .nameChart{
     color:#00203399;
@@ -101,4 +104,20 @@
     font-size:12px;
     color:#002033;
     font-weight: 400;
+}
+.tableBtnContainer{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0px 2px 6px 0px #A6A6A640;
+    background-color: #FFF;
+    width:40%;
+    margin-left: 24px;
+    padding:12px;
+    width:90%;
+}
+.buttonWrapperOnline{
+    display: flex;
+    flex-direction: row;
+    flex-wrap:wrap;
 }
