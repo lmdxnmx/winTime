@@ -61,9 +61,20 @@
 
   .filters{
     display: flex;   
+    margin-top:16px;
 }
 .datePicker{
     box-sizing: border-box;
     width:100px;
     margin-right:24px;
+}
+.filterWrapper{
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+.filterWrapper span{
+  color: #00203399;
+  font-size:14px;
+  padding-bottom: 4px;
 }

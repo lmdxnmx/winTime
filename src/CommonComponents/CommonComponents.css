@@ -17,3 +17,16 @@
     font-weight:500;
     color:#000;
 }
+.switchContainer{
+    display:flex;
+    border-bottom:1px solid #00426947;
+    margin-bottom:16px;
+}
+.switchBtn{
+ padding-bottom: 6px;
+ flex:1;
+}
+.switchBtn span{
+font-size: 12px;
+color:#002033;
+}

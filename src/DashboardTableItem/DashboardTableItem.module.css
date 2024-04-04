@@ -1,5 +1,5 @@
 .itemContainer{
-    background: #ECF1F4;
+    background: #F6F6F6;
     box-shadow: 0px 2px 8px 0px #00203329;
     width: 120px;
     height: 147px;
@@ -9,6 +9,8 @@
     padding-left: 8px;
     padding-right: 8px;
     box-shadow: 0px 2px 8px 0px #00203329;
+    margin-right:16px;
+    margin-bottom: 16px;
 }
 .itemName{
     color:#002033;
