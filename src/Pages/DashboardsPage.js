@@ -61,7 +61,10 @@ const DashboardsPage = () => {
           <DatePicker className="datePicker" size="s" placeholder="Сегодня" dropdownOpen={isOpen} type="time" value={timeValue} onChange={setTimeValue} />
         </div>
       </div>
-      <DashboardsTable />
+      <div className='dashboardsWrapper'>
+      <DashboardsTable name={"Токарные станки"} />
+      <DashboardsTable name={"Фрезерные станки"}/>
+      </div>
     </>
   )
 }

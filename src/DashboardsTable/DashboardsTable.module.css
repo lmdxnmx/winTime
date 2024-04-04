@@ -12,6 +12,7 @@
 .itemWrapper{
     display: flex;
     flex-wrap: wrap;
+    width:100%;
 }
 .title{
     text-align: left;

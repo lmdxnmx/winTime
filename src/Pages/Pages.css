@@ -38,6 +38,10 @@
     padding:12px;
     box-sizing: border-box;
   }
+  .dashboardsWrapper{
+    display: flex;
+    width: 100%;
+  }
   .chartContainer{
     display: flex;
     margin-bottom:24px;
