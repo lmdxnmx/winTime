@@ -4,6 +4,7 @@ import DropDownMenu from '../DropDownMenu/DropDownMenu';
 import { DatePicker } from '@consta/uikit/DatePicker';
 import DashboardsTable from '../DashboardsTable/DashboardsTable';
 import SwitchButtons from '../CommonComponents/SwitchButtons';
+import StatMeas from '../DashboardStatComponents/StatMeas';
 const DashboardsPage = () => {
   const [dateValue, setDateValue] = useState(null);
   const [timeValue, setTimeValue] = useState(null);
@@ -60,11 +61,16 @@ const DashboardsPage = () => {
           <span>Время</span>
           <DatePicker className="datePicker" size="s" placeholder="Сегодня" dropdownOpen={isOpen} type="time" value={timeValue} onChange={setTimeValue} />
         </div>
-      </div>
+      </div>{typeVal[0].active &&
       <div className='dashboardsWrapper'>
       <DashboardsTable name={"Токарные станки"} />
       <DashboardsTable name={"Фрезерные станки"}/>
-      </div>
+      </div>}
+     {typeVal[1].active &&
+     <div className='statWrapper'>
+        <StatMeas/>
+     </div>
+     }
     </>
   )
 }

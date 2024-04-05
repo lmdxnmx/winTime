@@ -49,6 +49,9 @@
   .comboBox{
     display: none;
   }
+  .statWrapper{
+    display: flex;
+  }
   .lineCategory{
     box-shadow: 0px 0px 0px 1px #00416633;
     border-radius: 4px;
