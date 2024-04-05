@@ -145,7 +145,7 @@ const DashboardsTable = ({ name }) => {
   return (
     <div className={s.tableDashboard} style={{ marginLeft: name === "Фрезерные станки" ? 16 : 0,width:name === "Фрезерные станки" ? "100%" : "" }}>
       <h1 className={s.title}>{name}</h1>
-      <SwitchButtons val={tableState} setVal={setTableState} />
+      <div style={{width:157}}> <SwitchButtons val={tableState} setVal={setTableState} /></div>
       <div className={s.itemWrapper}>
         {tableState[0].active &&
           <>

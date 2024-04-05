@@ -9,6 +9,8 @@ import OnlineChartPage from './Pages/OnlineChartPage';
 import Layout from './HOC/Layout';
 import DashboardsPage from './Pages/DashboardsPage';
 import OnlineItemPage from './Pages/OnlineItemPage';
+import ReportsPage from './Pages/ReportsPage';
+import QuestionAnswer from './Pages/QuestionAnswer';
 function App() {
   return (
     <Theme preset={presetGpnDefault}>
@@ -42,6 +44,22 @@ function App() {
           element={
             <Layout>
               <DashboardsPage />
+            </Layout>
+          }
+        />
+        <Route
+          path="reports"
+          element={
+            <Layout>
+              <ReportsPage/>
+            </Layout>
+          }
+        />
+        <Route
+          path="ChaVo"
+          element={
+            <Layout>
+              <QuestionAnswer/>
             </Layout>
           }
         />

@@ -15,7 +15,7 @@ const SwitchButtons = ({ val, setVal }) => {
   };
 
   return (
-    <div className='switchContainer' style={{maxWidth:val[0].size === 16 ? "173px" : "154px"}}>
+    <div className='switchContainer' >
       {val?.map((item, index) => (
         <div
           key={index}

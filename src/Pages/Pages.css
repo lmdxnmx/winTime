@@ -46,6 +46,13 @@
     display: flex;
     margin-bottom:24px;
   }
+  .columnContainer{
+    background: #F6F6F6;
+    border-radius: 8px;
+    width:93.5%;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
   .comboBox{
     display: none;
   }

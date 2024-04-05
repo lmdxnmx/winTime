@@ -38,13 +38,13 @@ const SideBar = () => {
             <div>
               <img src={Settings} width={14.45} height={15} />
             </div>
-            <div>
+            <div onClick={()=>navigate("/reports")}>
               <img src={DashBoard} width={13.33} height={13.33} />
             </div>
             <div>
               <img src={Charts2} width={14.5} height={14} />
             </div>
-            <div>
+            <div   onClick={()=>navigate("/ChaVo")}>
               <img src={Isa} width={6} height={14} />
             </div>
           </div>
@@ -85,15 +85,15 @@ const SideBar = () => {
               <img src={Settings} width={14.45} height={15} />
               <span>Панель оператора</span>
             </div>
-            <div>
-              <img src={DashBoard} width={13.33} height={13.33} />
+            <div onClick={()=>navigate("/reports")}>
+              <img  src={DashBoard} width={13.33} height={13.33} />
               <span>Отчеты</span>
             </div>
             <div>
               <img src={Charts2} width={14.5} height={14} />
               <span>Анализ сигналов</span>
             </div>
-            <div>
+            <div onClick={()=>navigate("/ChaVo")}>
               <img src={Isa} width={6} height={14} />
               <span>FAQ</span>
             </div>

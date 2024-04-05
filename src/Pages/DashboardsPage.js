@@ -5,6 +5,7 @@ import { DatePicker } from '@consta/uikit/DatePicker';
 import DashboardsTable from '../DashboardsTable/DashboardsTable';
 import SwitchButtons from '../CommonComponents/SwitchButtons';
 import StatMeas from '../DashboardStatComponents/StatMeas';
+import StatWork from '../DashboardStatComponents/StatWork';
 const DashboardsPage = () => {
   const [dateValue, setDateValue] = useState(null);
   const [timeValue, setTimeValue] = useState(null);
@@ -43,7 +44,9 @@ const DashboardsPage = () => {
   return (
     <>
       <h1 className='title'>Дашборд</h1>
+      <div style={{width:173}}>
       <SwitchButtons val={typeVal} setVal={setTypeVal} />
+      </div>
       <div className="filters">
         <div className='filterWrapper'>
           <span>Оборудование</span>
@@ -69,6 +72,7 @@ const DashboardsPage = () => {
      {typeVal[1].active &&
      <div className='statWrapper'>
         <StatMeas/>
+        <StatWork/>
      </div>
      }
     </>
