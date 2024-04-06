@@ -5,12 +5,22 @@ import { DatePicker } from '@consta/uikit/DatePicker';
   import { Table } from '@consta/uikit/Table';
   import ColumnChart from '../Charts/ColumnChart';
 import { DonutChart } from './../Charts/DonutChart';
-
+import ColumnChart2 from '../Charts/ColumnChart2';
+import Bullet from '../Charts/Bullet';
+import ProgressBar from '../ProgressBar/ProgressBar';
+import { Modal } from '@consta/uikit/Modal';
+import ss from "./../TableItem/TableItem.module.css"
 const ReportsPage = () => {
-  const [typeVal, setTypeVal] = useState([{ name: "Отчет по загрузке", active: false, size: 16 }, { name: "Выполненные операции", active: true, size: 16 }, { name: "Анализ тегов", active: false, size: 16 },{ name: "Учет инструментов", active: false, size: 16 }])
+  const [typeVal, setTypeVal] = useState([{ name: "Отчет по загрузке", active: true, size: 16 }, { name: "Выполненные операции", active: false, size: 16 }, { name: "Анализ тегов", active: false, size: 16 },{ name: "Учет инструментов", active: false, size: 16 }])
   const [dateValue, setDateValue] = useState(null);
   const [timeValue, setTimeValue] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [openModal, setOpenModal] = useState(false)
+  const data =[{
+    color: "#FF8C00",
+    percent: 10,
+  },
+  { color: "#32CD32", percent: 35 }]
   const [isOpenChanges, setIsOpenChanges] = useState(false);
   const [isOpenMachines, setIsOpenMachines] = useState(false);
   const refDropMachines = useRef(null);
@@ -234,7 +244,7 @@ const ReportsPage = () => {
       <div style={{width:"35%"}}>
         <SwitchButtons val={typeVal} setVal={setTypeVal} />
       </div>
-      <div className="filters">
+      <div className="filters" style={{marginBottom:10}}>
         <div className='filterWrapper'>
           <span>Оборудование</span>
           <DropDownMenu width={352} refs={refDropMachines} label={"Все станки"} isOpen={isOpenMachines} setIsOpen={setIsOpenMachines} />
@@ -272,6 +282,40 @@ const ReportsPage = () => {
           <DonutChart/></div>
       </div>
       </>}
+      {typeVal[2].active && <div>
+        <Modal isOpen={openModal}
+      hasOverlay
+      onClickOutside={() => setOpenModal(false)}
+      onEsc={() => setOpenModal(false)}
+    >
+      <div style={{ height: "182px", width: 450,paddingLeft:"24px",paddingRight:"24px" }} onClick={() => setOpenModal(true)}>
+        <h3>Холостой ход</h3>
+        <div style={{display:'flex',justifyContent:'space-between'}}>
+        <span style={{color:'#002033',fontSize:'12px',paddingTop:'16px'}}>Период времени</span>
+        <span style={{color:'#002033',fontSize:'12px',paddingTop:'16px'}}>07:38-08:43</span>
+        </div>
+        <div style={{display:'flex',justifyContent:'space-between'}}>
+        <span style={{color:'#002033',fontSize:'12px',paddingTop:'16px'}}>Программа</span>
+        <span style={{color:'#002033',fontSize:'12px',paddingTop:'16px'}}>Xty-peo344</span>
+        </div>
+        <div style={{display:'flex',width:'100%',alignItems: 'center',marginTop:16}}>
+
+          <div style={{ display: 'flex', flexDirection: 'column',width:'100%',marginLeft:24 }}> 
+          <ProgressBar label={data}/>
+            <div className={ss.load_time}>
+              <span>07:33</span>
+              <span>07:53</span>
+              <span>08:13</span>
+              <span>08:33</span>
+              <span>08:53</span>
+            </div>
+          </div>
+          </div>
+        </div></Modal>
+        <div onClick={()=>setOpenModal(true)}><Bullet/></div></div>}
+      {typeVal[3].active && <div className='columnContainer'>
+        <ColumnChart2/>
+      </div>}
       <div style={{width:"95%"}}>
     <Table size="s" zebraStriped='odd' rows={rows} columns={columns} borderBetweenRows={true} borderBetweenColumns={true} width={"100%"}/>
     </div>

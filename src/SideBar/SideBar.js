@@ -41,7 +41,7 @@ const SideBar = () => {
             <div onClick={()=>navigate("/reports")}>
               <img src={DashBoard} width={13.33} height={13.33} />
             </div>
-            <div>
+            <div onClick={()=>navigate("/Analytics")}>
               <img src={Charts2} width={14.5} height={14} />
             </div>
             <div   onClick={()=>navigate("/ChaVo")}>

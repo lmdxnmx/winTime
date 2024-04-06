@@ -11,6 +11,7 @@ import DashboardsPage from './Pages/DashboardsPage';
 import OnlineItemPage from './Pages/OnlineItemPage';
 import ReportsPage from './Pages/ReportsPage';
 import QuestionAnswer from './Pages/QuestionAnswer';
+import { MixPlotExample } from './Charts/Mix';
 function App() {
   return (
     <Theme preset={presetGpnDefault}>
@@ -60,6 +61,13 @@ function App() {
           element={
             <Layout>
               <QuestionAnswer/>
+            </Layout>
+          }
+        />
+        <Route
+          path="Analytics"
+          element={
+            <Layout>
             </Layout>
           }
         />

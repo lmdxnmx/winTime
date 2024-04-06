@@ -5,6 +5,7 @@ import { DonutChart } from "../Charts/DonutChart";
 import ProgressBar from "../ProgressBar/ProgressBar";
 import ButtonBlock from "../CommonComponents/ButtonBlock";
 import { Table } from '@consta/uikit/Table';
+import SwitchButtons from "../CommonComponents/SwitchButtons";
 const OnlineItemPage = () => {
   const refDropChanges = useRef(null);
   const [isOpenChanges, setIsOpenChanges] = useState(false);
@@ -119,7 +120,8 @@ const OnlineItemPage = () => {
     },
   ];
   const [filteredRows, setFilteredRows] = useState(rows)
-
+  const [typeVal, setTypeVal] = useState([{ name: "Смена", active: true, size: 16 }, 
+   { name: "День", active: false, size: 16 },{ name: "Вызов", active: false, size: 16 }])
   return (
     <div className="onlineItemContainer">
       <div></div>
@@ -128,7 +130,9 @@ const OnlineItemPage = () => {
       </div>
       <div style={{display:'flex',flex:5}}>
         <div className="onlineItemCentWrapper" >
-          <span style={{ height: 40 }}>.....</span>
+          <div style={{maxWidth:'35%'}}>
+  <SwitchButtons val={typeVal} setVal={setTypeVal} />
+  </div>
           <div style={{ margin: "24px 0 24px 0" }}>
             <DropDownMenu
               width={101}
