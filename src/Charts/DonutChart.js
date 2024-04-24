@@ -1,17 +1,18 @@
-import React from 'react';
+import React,{useState,useEffect} from 'react';
 import { Pie } from '@consta/charts/Pie';
 import { Text } from '@consta/uikit/Text';
 import { useThemeVars } from '@consta/uikit/useThemeVars';
 
-export const DonutChart = () => {
-  const data = [
-    { type: 'DOOSAN 2700LY', value: 27 },
-    { type: 'DOOSAN 2600LY', value: 25 },
-    { type: 'DOOSAN 2700L', value: 18 },
-    { type: 'DOOSAN 2600L', value: 15 },
-    { type: 'DOOSAN 2500LY', value: 10 },
-    { type: 'DOOSAN 2500L', value: 5 },
-  ];
+export const DonutChart = ({value}) => {
+  const [data,setData] = useState([
+    { name: 'DOOSAN 2700LY',type:"Работало", value: 27, },
+    { name: 'DOOSAN 2600LY',type:"Авария", value: 25 },
+    { name: 'DOOSAN 2700L', type:"Не работало",value: 18 },
+    { name: 'DOOSAN 2600L', type:"Обслуживание",value: 15 },
+    { name: 'DOOSAN 2500LY',type:"Необоснованный простой", value: 10 },
+    { name: 'DOOSAN 2500L', type:"Поломка инструмента",value: 5 },
+    { name: 'DOOSAN 2500L', type:"Ручной режим инструмента",value: 0 },
+  ]);
 
   function sum(array) {
     if (!array) {
@@ -24,8 +25,10 @@ export const DonutChart = () => {
     return s.toString();
   }
 
-
   const vars = useThemeVars();
+
+  // Массив цветов, которые вы хотите использовать
+  const colors = ['#32CD32', '#FF8C00', '#FFD700', '#4682B4', '#FF69B4', '#008B8B', '#FF8C00'];
 
   return (
     <Pie
@@ -35,9 +38,10 @@ export const DonutChart = () => {
       }}
       data={data}
       angleField="value"
-      colorField="type"
+      seriesField="type"
+      colorField={"name"}
+      color={colors}
       legend={false}
-
       radius={1}
       statistic={{
         title: {
@@ -52,9 +56,7 @@ export const DonutChart = () => {
           customHtml: (v, v2, v3, v4) => (
             <span style={{ fontSize: 0 }}>{sum(data)}%</span>
           ),
-
         },
-
       }}
       innerRadius={0.5}
       tooltip={{
@@ -65,7 +67,6 @@ export const DonutChart = () => {
             padding: '0px',
             width: "165px",
           },
-
           'g2-tooltip-list': {
             margin: 0,
             padding: 0,

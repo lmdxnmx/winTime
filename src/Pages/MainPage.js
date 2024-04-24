@@ -16,13 +16,14 @@ const MainPage = () => {
 ]); 
   return (
     <>
-    <CategoryChoose value={categoriesColor} setValue={setCategoriesColors}/>
+    <h1 className="title">Общая статистика</h1>
     <div className="chartContainer">
       <div className="donutContainer">
         <h3 style={{ fontSize: 11 }}>Загрузка всех станков</h3>
-        <DonutChart />
+        <DonutChart categoriesColor={categoriesColor} />
       </div>
       <div className="lineContainer">
+    <CategoryChoose value={categoriesColor} setValue={setCategoriesColors}/>
         
         <LineChart categoriesColor={categoriesColor} />
       </div>

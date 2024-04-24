@@ -152,7 +152,7 @@ export const TableConsta = () => {
      <h1 className={s.title}>Перечень и загрузка оборудования</h1>
     <div className={s.filterTable}>
       <DropDownMenu width={352} refs={refDropMachines} label={"Все станки"} isOpen={isOpenMachines} setIsOpen={setIsOpenMachines} />
-      <DatePicker className={s.datePicker} size="s" placeholder="Сегодня" dropdownOpen={isOpen} type="date" value={dateValue} onChange={setDateValue} />
+      <DatePicker style={{width:250}} className={s.datePicker} size="s" placeholder="Сегодня" dropdownOpen={isOpen} type="date-range" value={dateValue} onChange={setDateValue} />
       <DropDownMenu width={123} label={"Все смены"} refs={refDropChanges} isOpen={isOpenChanges} setIsOpen={setIsOpenChanges} />
       <DatePicker className={s.datePicker} size="s" placeholder="Сегодня" dropdownOpen={isOpen} type="time" value={timeValue} onChange={setTimeValue} />
     </div>
