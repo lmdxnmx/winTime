@@ -7,60 +7,47 @@ import s from "./../TableItem/TableItem.module.css"
 import DropDownMenu from '../DropDownMenu/DropDownMenu';
 import { DatePicker } from '@consta/uikit/DatePicker';
 import { Modal } from '@consta/uikit/Modal';
+import axios from 'axios';
 
-export const TableConsta = () => {
+export const TableConsta = ({ machines }) => {
 
   const [dateValue, setDateValue] = useState(null);
-  const [timeValue, setTimeValue] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
   const [isOpenChanges, setIsOpenChanges] = useState(false);
   const [isOpenMachines, setIsOpenMachines] = useState(false);
   const [openModal, setOpenModal] = useState(false)
   const refDropMachines = useRef(null);
   const refDropChanges = useRef(null);
-  const data =[{
+
+  const data = [{
     color: "#FF8C00",
     percent: 10,
   },
   { color: "#32CD32", percent: 35 }]
-  const [rows, setRows] = useState([
-    {
-      name: 'DOOSAN 2600LY',
-      serial: 'NS:152667dl',
-      percent: "45%",
-      loadDay: [{
-        color: "#FF8C00",
-        percent: 10,
-      },
-      { color: "#32CD32", percent: 35 }],
-      programm: "xLk_051",
-      sum: 124230
-    },
-    {
-      name: 'DOOSAN 2700LY',
-      serial: 'NS:152667dl',
-      percent: "50%",
-      loadDay: [{
-        color: "#FF8C00",
-        percent: 10,
-      },
-      { color: "#32CD32", percent: 35 }],
-      programm: "xLk_051",
-      sum: 124230
-    },
-    {
-      name: 'DOOSAN 2600LY',
-      serial: 'NS:152667dl',
-      percent: "50%",
-      loadDay: [{
-        color: "#FF8C00",
-        percent: 10,
-      },
-      { color: "#32CD32", percent: 35 }],
-      programm: "xLk_051",
-      sum: 124230
-    },
-  ]);
+  const [rows, setRows] = useState([]);
+  useEffect(() => {
+    if (machines.length > 0) {
+      const newChartData = machines.map(machine => ({
+        name: machine.name,
+        serial: machine.slug,
+        percent: "50%",
+        loadDay: [{
+          color: "#FF8C00",
+          percent: 10,
+        },
+        {
+          color: "#32CD32",
+          percent: 35
+        }
+        ],
+        programm: "xLk_051",
+        sum: 124230
+      }));
+      setRows(newChartData)
+      setFilteredRows(newChartData)
+    }
+  }, [machines]);
+
   const [filteredRows, setFilteredRows] = useState(rows)
   const columns = [
     {
@@ -148,13 +135,20 @@ export const TableConsta = () => {
       document.removeEventListener("click", handleClickOutside);
     };
   }, []);
-  return (<div>
-     <h1 className={s.title}>Перечень и загрузка оборудования</h1>
+
+  return (<div style={{minHeight:"50vh"}}>
+    <h1 className={s.title}>Перечень и загрузка оборудования</h1>
     <div className={s.filterTable}>
-      <DropDownMenu width={352} refs={refDropMachines} label={"Все станки"} isOpen={isOpenMachines} setIsOpen={setIsOpenMachines} />
-      <DatePicker style={{width:250}} className={s.datePicker} size="s" placeholder="Сегодня" dropdownOpen={isOpen} type="date-range" value={dateValue} onChange={setDateValue} />
+      <DropDownMenu width={352}
+        refs={refDropMachines}
+        label={"Все станки"}
+        isOpen={isOpenMachines}
+        setIsOpen={setIsOpenMachines}
+        machines={machines}
+        setFilteredRows={setFilteredRows}
+        rows={rows} />
       <DropDownMenu width={123} label={"Все смены"} refs={refDropChanges} isOpen={isOpenChanges} setIsOpen={setIsOpenChanges} />
-      <DatePicker className={s.datePicker} size="s" placeholder="Сегодня" dropdownOpen={isOpen} type="time" value={timeValue} onChange={setTimeValue} />
+      <DatePicker style={{ width: 450 }} className={s.datePicker} size="s" placeholder="Сегодня" dropdownOpen={isOpen} type="date-time-range" value={dateValue} onChange={setDateValue} />
     </div>
     <Table zebraStriped='odd' rows={filteredRows} columns={columns} borderBetweenRows={true} borderBetweenColumns={true} />
     <Modal isOpen={openModal}
@@ -162,14 +156,14 @@ export const TableConsta = () => {
       onClickOutside={() => setOpenModal(false)}
       onEsc={() => setOpenModal(false)}
     >
-      <div style={{ height: "700px", width: 820,paddingLeft:"24px",paddingRight:"24px" }} onClick={() => setOpenModal(true)}>
+      <div style={{ height: "700px", width: 820, paddingLeft: "24px", paddingRight: "24px" }} onClick={() => setOpenModal(true)}>
         <h3>Подробный отчет</h3>
-        <span style={{color:'#002033',fontSize:'12px',paddingTop:'16px'}}>1 смена</span>
-        <div style={{display:'flex',width:'100%',alignItems: 'center',marginTop:16}}>
-        <span style={{color:"#00203399",fontSize:"14px",whiteSpace: "nowrap"}}>00:00 - 00:59</span>
+        <span style={{ color: '#002033', fontSize: '12px', paddingTop: '16px' }}>1 смена</span>
+        <div style={{ display: 'flex', width: '100%', alignItems: 'center', marginTop: 16 }}>
+          <span style={{ color: "#00203399", fontSize: "14px", whiteSpace: "nowrap" }}>00:00 - 00:59</span>
 
-          <div style={{ display: 'flex', flexDirection: 'column',width:'100%',marginLeft:24 }}> 
-          <ProgressBar label={data}/>
+          <div style={{ display: 'flex', flexDirection: 'column', width: '100%', marginLeft: 24 }}>
+            <ProgressBar label={data} />
             <div className={s.load_time}>
               <span>00</span>
               <span>10</span>
@@ -181,11 +175,11 @@ export const TableConsta = () => {
             </div>
           </div>
         </div>
-        <div style={{display:'flex',width:'100%',alignItems: 'center',marginTop:16}}>
-        <span style={{color:"#00203399",fontSize:"14px",whiteSpace: "nowrap"}}>01:00 - 01:59</span>
+        <div style={{ display: 'flex', width: '100%', alignItems: 'center', marginTop: 16 }}>
+          <span style={{ color: "#00203399", fontSize: "14px", whiteSpace: "nowrap" }}>01:00 - 01:59</span>
 
-          <div style={{ display: 'flex', flexDirection: 'column',width:'100%',marginLeft:24 }}> 
-          <ProgressBar label={data}/>
+          <div style={{ display: 'flex', flexDirection: 'column', width: '100%', marginLeft: 24 }}>
+            <ProgressBar label={data} />
             <div className={s.load_time}>
               <span>00</span>
               <span>10</span>
@@ -197,11 +191,11 @@ export const TableConsta = () => {
             </div>
           </div>
         </div>
-        <div style={{display:'flex',width:'100%',alignItems: 'center',marginTop:16}}>
-        <span style={{color:"#00203399",fontSize:"14px",whiteSpace: "nowrap"}}>02:00 - 02:59</span>
+        <div style={{ display: 'flex', width: '100%', alignItems: 'center', marginTop: 16 }}>
+          <span style={{ color: "#00203399", fontSize: "14px", whiteSpace: "nowrap" }}>02:00 - 02:59</span>
 
-          <div style={{ display: 'flex', flexDirection: 'column',width:'100%',marginLeft:24 }}> 
-          <ProgressBar label={data}/>
+          <div style={{ display: 'flex', flexDirection: 'column', width: '100%', marginLeft: 24 }}>
+            <ProgressBar label={data} />
             <div className={s.load_time}>
               <span>00</span>
               <span>10</span>
@@ -213,11 +207,11 @@ export const TableConsta = () => {
             </div>
           </div>
         </div>
-        <div style={{display:'flex',width:'100%',alignItems: 'center',marginTop:16}}>
-        <span style={{color:"#00203399",fontSize:"14px",whiteSpace: "nowrap"}}>03:00 - 03:59</span>
+        <div style={{ display: 'flex', width: '100%', alignItems: 'center', marginTop: 16 }}>
+          <span style={{ color: "#00203399", fontSize: "14px", whiteSpace: "nowrap" }}>03:00 - 03:59</span>
 
-          <div style={{ display: 'flex', flexDirection: 'column',width:'100%',marginLeft:24 }}> 
-          <ProgressBar label={data}/>
+          <div style={{ display: 'flex', flexDirection: 'column', width: '100%', marginLeft: 24 }}>
+            <ProgressBar label={data} />
             <div className={s.load_time}>
               <span>00</span>
               <span>10</span>
@@ -229,11 +223,11 @@ export const TableConsta = () => {
             </div>
           </div>
         </div>
-        <div style={{display:'flex',width:'100%',alignItems: 'center',marginTop:16}}>
-        <span style={{color:"#00203399",fontSize:"14px",whiteSpace: "nowrap"}}>04:00 - 04:59</span>
+        <div style={{ display: 'flex', width: '100%', alignItems: 'center', marginTop: 16 }}>
+          <span style={{ color: "#00203399", fontSize: "14px", whiteSpace: "nowrap" }}>04:00 - 04:59</span>
 
-          <div style={{ display: 'flex', flexDirection: 'column',width:'100%',marginLeft:24 }}> 
-          <ProgressBar label={data}/>
+          <div style={{ display: 'flex', flexDirection: 'column', width: '100%', marginLeft: 24 }}>
+            <ProgressBar label={data} />
             <div className={s.load_time}>
               <span>00</span>
               <span>10</span>
@@ -245,11 +239,11 @@ export const TableConsta = () => {
             </div>
           </div>
         </div>
-        <div style={{display:'flex',width:'100%',alignItems: 'center',marginTop:16}}>
-        <span style={{color:"#00203399",fontSize:"14px",whiteSpace: "nowrap"}}>05:00 - 05:59</span>
+        <div style={{ display: 'flex', width: '100%', alignItems: 'center', marginTop: 16 }}>
+          <span style={{ color: "#00203399", fontSize: "14px", whiteSpace: "nowrap" }}>05:00 - 05:59</span>
 
-          <div style={{ display: 'flex', flexDirection: 'column',width:'100%',marginLeft:24 }}> 
-          <ProgressBar label={data}/>
+          <div style={{ display: 'flex', flexDirection: 'column', width: '100%', marginLeft: 24 }}>
+            <ProgressBar label={data} />
             <div className={s.load_time}>
               <span>00</span>
               <span>10</span>
@@ -261,11 +255,11 @@ export const TableConsta = () => {
             </div>
           </div>
         </div>
-        <div style={{display:'flex',width:'100%',alignItems: 'center',marginTop:16}}>
-        <span style={{color:"#00203399",fontSize:"14px",whiteSpace: "nowrap"}}>06:00 - 06:59</span>
+        <div style={{ display: 'flex', width: '100%', alignItems: 'center', marginTop: 16 }}>
+          <span style={{ color: "#00203399", fontSize: "14px", whiteSpace: "nowrap" }}>06:00 - 06:59</span>
 
-          <div style={{ display: 'flex', flexDirection: 'column',width:'100%',marginLeft:24 }}> 
-          <ProgressBar label={data}/>
+          <div style={{ display: 'flex', flexDirection: 'column', width: '100%', marginLeft: 24 }}>
+            <ProgressBar label={data} />
             <div className={s.load_time}>
               <span>00</span>
               <span>10</span>
@@ -277,11 +271,11 @@ export const TableConsta = () => {
             </div>
           </div>
         </div>
-        <div style={{display:'flex',width:'100%',alignItems: 'center',marginTop:16}}>
-        <span style={{color:"#00203399",fontSize:"14px",whiteSpace: "nowrap"}}>07:00 - 07:59</span>
+        <div style={{ display: 'flex', width: '100%', alignItems: 'center', marginTop: 16 }}>
+          <span style={{ color: "#00203399", fontSize: "14px", whiteSpace: "nowrap" }}>07:00 - 07:59</span>
 
-          <div style={{ display: 'flex', flexDirection: 'column',width:'100%',marginLeft:24 }}> 
-          <ProgressBar label={data}/>
+          <div style={{ display: 'flex', flexDirection: 'column', width: '100%', marginLeft: 24 }}>
+            <ProgressBar label={data} />
             <div className={s.load_time}>
               <span>00</span>
               <span>10</span>
@@ -293,7 +287,7 @@ export const TableConsta = () => {
             </div>
           </div>
         </div>
-        
+
       </div>
     </Modal>
   </div>);

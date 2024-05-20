@@ -2,11 +2,22 @@ import React, { useState, useRef, useEffect } from 'react';
 import s from "./dropDownMenu.module.css";
 import { Checkbox } from '@consta/uikit/Checkbox';
 
-const DropDownMenu = ({ label, refs, width, isOpen, setIsOpen, value, setValue }) => {
+const DropDownMenu = ({ label, refs, width, isOpen, setIsOpen, value, setValue,machines, setFilteredRows, rows }) => {
     const [valueMachines, setValueMachines] = useState([
         { label: "DOOSAN 2600LY", active: true, id: 1 }, 
         { label: "DOOSAN 2700LY", active: true, id: 2 },
     ]);
+    useEffect(() => {
+        if (machines?.length > 0) {
+          const newValueMachines = machines.map(machine => ({
+            label: machine.name, 
+            active: true, 
+            id: machine.id, 
+          }));
+      
+          setValueMachines(newValueMachines);
+        }
+      }, [machines]);
     const [valueChanges, setValueChanges] = useState([
         { label: "1 смена", active: true, id: 1 }, 
         { label: "2 смена", active: true, id: 2 },
@@ -18,9 +29,11 @@ const DropDownMenu = ({ label, refs, width, isOpen, setIsOpen, value, setValue }
     };
 
     const getItemMachinesOnClick = (item) => {
-        setValueMachines(prevValue => prevValue.map(prevItem => prevItem.id === item.id ? { ...prevItem, active: !prevItem.active } : prevItem))
+        setValueMachines(prevValue => prevValue.map(prevItem => prevItem.id === item.id ? { ...prevItem, active: !prevItem.active } : prevItem));
+        const activeMachines = valueMachines.map(machine => machine.id === item.id ? { ...machine, active: !machine.active } : machine);
+        const filtered = rows.filter(row => activeMachines.find(machine => machine.label === row.name && machine.active));
+        setFilteredRows(filtered);
     };
-
     const getItemChangesOnClick = (item) => {
         setValueChanges(prevValue => prevValue.map(prevItem => prevItem.id === item.id ? { ...prevItem, active: !prevItem.active } : prevItem))
     };

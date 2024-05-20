@@ -1,35 +1,89 @@
-import React,{useState} from 'react'
-import {TableConsta} from './../Table/TableConsta';
+import React, { useEffect, useState } from 'react'
+import { TableConsta } from './../Table/TableConsta';
 import { DonutChart } from './../Charts/DonutChart';
 import { LineChart } from './../Charts/LineChart';
 import "./Pages.css"
 import CategoryChoose from './../CategoryChoose/CategoryChoose';
+import axios from 'axios';
+
 const MainPage = () => {
-  const [categoriesColor,setCategoriesColors] = useState([
-    { label: "Работало",color:"#32CD32" ,active: true, id: 1 }, 
-    { label: "Авария",color:"#FF8C00", active: true, id: 2 },
-    { label: "Не работало",color:"#FFD700", active: true, id: 3 },
-    { label: "Обслуживание",color:"#4682B4", active: true, id: 4 },
-    { label: "Необоснованный простой",color:"#FF69B4", active: false, id: 5 },
-    { label: "Поломка инструмента",color:"#008B8B", active: false, id: 6 },
-    { label: "Ручной режим инструмента",color:"#FF8C00", active: false, id: 7 },
-]); 
+  const [categoriesColor, setCategoriesColors] = useState([]);
+  const [machines, setMachines] = useState([]);
+  const [dateValue, setDateValue] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [machineTimeWork, setMachineTimeWork] = useState(null)
+  useEffect(() => {
+    axios.get('http://192.168.1.109:8000/machines')
+      .then(response => {
+        setMachines(response?.data?.machines);
+      })
+      .catch(error => {
+        console.error('Ошибка при получении машин:', error);
+      });
+  }, []);
+
+  useEffect(() => {
+    if (machines.length > 0) {
+      (async () => {
+        for (const mach of machines) {
+          try {
+            const response = await axios.get(`http://192.168.1.109:8000/machine/${mach.slug}/all-states`);
+            const newStates = response.data.states;
+            setCategoriesColors(prevState => {
+              const updatedState = [...prevState];
+              if (newStates.length > 0) {
+                newStates.forEach(newState => {
+                  if (!updatedState.some(item => item.label === newState.name)) {
+                    updatedState.push({ label: newState.name, color: newState.color, active: true, id: newState.id, slug: newState.slug });
+                  }
+                });
+              };
+              return updatedState;
+            });
+          } catch (error) {
+            console.error(error);
+          }
+          try {
+            const response = await axios.get(`http://192.168.1.109:8000/machine/${mach.slug}/states/?from=2024-05-20T00:00&to=2024-05-20T23:59`);
+            const newStates = response.data.states;
+            console.log(response)
+            setMachineTimeWork(prevState => {
+              const updatedState = [...prevState];
+                newStates.forEach(newState => {
+                    updatedState.push({ time:Object.keys(newState), value: Object.values(newState), machine: mach.slug });
+                });
+              return updatedState;
+            });
+          } catch (error) {
+            console.error(error);
+          }
+        }
+        setIsLoading(false); 
+      })();
+    }
+  }, [machines]);
+  
+  useEffect(()=>{
+    console.log(machineTimeWork)
+  },[machineTimeWork])
   return (
     <>
-    <h1 className="title">Общая статистика</h1>
-    <div className="chartContainer">
-      <div className="donutContainer">
-        <h3 style={{ fontSize: 11 }}>Загрузка всех станков</h3>
-        <DonutChart categoriesColor={categoriesColor} />
+      <h1 className="title">Общая статистика</h1>
+      <div className="chartContainer">
+        <div className="donutContainer">
+          <h3 style={{ fontSize: 11 }}>Загрузка всех станков</h3>
+          {!isLoading && (
+  <DonutChart dateValue={dateValue} categoriesColor={categoriesColor} />
+)}
+        </div>
+        <div className="lineContainer">
+          <CategoryChoose dateValue={dateValue} setDateValue={setDateValue} value={categoriesColor} setValue={setCategoriesColors} />
+          {!isLoading && (
+  <LineChart dateValue={dateValue} categoriesColor={categoriesColor} />
+)}
+        </div>
       </div>
-      <div className="lineContainer">
-    <CategoryChoose value={categoriesColor} setValue={setCategoriesColors}/>
-        
-        <LineChart categoriesColor={categoriesColor} />
-      </div>
-    </div>
-    <TableConsta />
-  </>
+      {!isLoading && (<TableConsta machines={machines} />)}</>
   )
 }
 
