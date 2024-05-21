@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import s from "./dropDownMenu.module.css";
 import { Checkbox } from '@consta/uikit/Checkbox';
-
-const DropDownMenu = ({ label, refs, width, isOpen, setIsOpen, value, setValue,machines, setFilteredRows, rows }) => {
+import { IconArrowDown } from "@consta/icons/IconArrowDown"
+import { IconArrowUp } from "@consta/icons/IconArrowUp"
+const DropDownMenu = ({ label, refs, width, isOpen, setIsOpen, value, setValue,machines, setFilteredRows, rows, }) => {
     const [valueMachines, setValueMachines] = useState([
         { label: "DOOSAN 2600LY", active: true, id: 1 }, 
         { label: "DOOSAN 2700LY", active: true, id: 2 },
@@ -55,10 +56,10 @@ const DropDownMenu = ({ label, refs, width, isOpen, setIsOpen, value, setValue,m
 
     return (
         <div ref={refs} style={{ width: width, position:'relative' }} className={label !== "" && s.filterButton}>
-           {label !== "" && <div className={s.filterLabel} onClick={() => {
-                console.log(isOpen)
+           {label !== "" && <div className={s.filterLabel} style={{display:'flex', alignItems:'center', justifyContent:'space-between'}} onClick={() => {
                 setIsOpen(!isOpen)}}>
                 {label}
+                {(isOpen && label === "Все станки") || (isOpen &&  label === "Все смены") ? <IconArrowUp size='xs'/>: <IconArrowDown size='xs'/>}
             </div>}
             <div  className={s.dropDown} style={{ display: isOpen === true  ? "" : "none", right:label === "" ? "40px" : "", width:label === "" ? "" :"100%" }} onClick={handleMenuClick}>
                 {label === "Все станки" && 

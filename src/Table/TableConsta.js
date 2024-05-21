@@ -8,17 +8,25 @@ import DropDownMenu from '../DropDownMenu/DropDownMenu';
 import { DatePicker } from '@consta/uikit/DatePicker';
 import { Modal } from '@consta/uikit/Modal';
 import axios from 'axios';
-
+import Calendar from "./../images/Calendar.svg"
 export const TableConsta = ({ machines }) => {
 
   const [dateValue, setDateValue] = useState(null);
+  const [timeStart, setTimeStart] = useState(null);
+  const [timeFinish, setTimeFinish] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
   const [isOpenChanges, setIsOpenChanges] = useState(false);
   const [isOpenMachines, setIsOpenMachines] = useState(false);
   const [openModal, setOpenModal] = useState(false)
   const refDropMachines = useRef(null);
   const refDropChanges = useRef(null);
-
+  const [timesIsView, setTimesIsView] = useState(false);
+  const timesRef = useRef();
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth()).padStart(2, '0');
+  const day = String(today.getDate() + 1).padStart(2, '0');
+  const maxDate = new Date(year, month, day);
   const data = [{
     color: "#FF8C00",
     percent: 10,
@@ -136,21 +144,62 @@ export const TableConsta = ({ machines }) => {
     };
   }, []);
 
-  return (<div style={{minHeight:"50vh"}}>
+
+  return (<div style={{ minHeight: "50vh" }}>
     <h1 className={s.title}>Перечень и загрузка оборудования</h1>
     <div className={s.filterTable}>
-      <DropDownMenu width={352}
-        refs={refDropMachines}
-        label={"Все станки"}
-        isOpen={isOpenMachines}
-        setIsOpen={setIsOpenMachines}
-        machines={machines}
-        setFilteredRows={setFilteredRows}
-        rows={rows} />
-      <DropDownMenu width={123} label={"Все смены"} refs={refDropChanges} isOpen={isOpenChanges} setIsOpen={setIsOpenChanges} />
-      <DatePicker style={{ width: 450 }} className={s.datePicker} size="s" placeholder="Сегодня" dropdownOpen={isOpen} type="date-time-range" value={dateValue} onChange={setDateValue} />
+      <div style={{ display: 'flex', flexDirection: 'column' }} onClick={()=>setTimesIsView(false)}>
+        <span style={{ color: "#00203399", textAlign: 'left', paddingBottom: 4, fontSize: 14 }}>Оборудование</span>
+        <DropDownMenu width={352}
+          refs={refDropMachines}
+          label={"Все станки"}
+          isOpen={isOpenMachines}
+          setIsOpen={setIsOpenMachines}
+          machines={machines}
+          setFilteredRows={setFilteredRows}
+          rows={rows} 
+          />
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column' }} onClick={()=>setTimesIsView(false)}>
+        <span style={{ color: "#00203399", textAlign: 'left', paddingBottom: 4, fontSize: 14 }}>Смена</span>
+        <DropDownMenu width={123} label={"Все смены"} refs={refDropChanges} isOpen={isOpenChanges} setIsOpen={setIsOpenChanges} />
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column' }} onClick={()=>setTimesIsView(false)}>
+        <span style={{ color: "#00203399", textAlign: 'left', paddingBottom: 4, fontSize: 14 }}>Дата</span>
+        <div style={{position:"relative"}}>
+        <DatePicker style={{ width: 118 }} className={s.datePicker} size="s" placeholder="Сегодня" dropdownOpen={isOpen} type="date" value={dateValue} onChange={setDateValue} maxDate={maxDate} />
+     <img style={{position:"absolute", top:'37.5%',right:"22%"}} src={Calendar} width={10} height={10}/>
+     </div>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
+        <span style={{ color: "#00203399", textAlign: 'left', paddingBottom: 4, fontSize: 14 }}>Время</span>
+        <div ref={timesRef}  style={{ width: 140, position:'relative' }} className={s.filterButton}>
+        <div
+  style={{ position: 'relative' }}
+  className={s.filterLabel}
+  onClick={() => {
+    setTimesIsView(!timesIsView);
+  }}
+>
+  {`${timeStart ? timeStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '00:00'} - ${
+    timeFinish ? timeFinish.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '23:59'
+  }`}
+  <img style={{ position: 'absolute', top: '35%', right: '5%' }} src={Calendar} width={10} height={10} />
+</div>;
+
+        <div className={s.dropDown} style={{ display: timesIsView === true  ? "" : "none", }}>
+   
+            <div className={s.dropDownItemChanges}>
+            <div><DatePicker style={{ width: 64, marginRight:10, marginLeft:0}} className={s.datePicker} size="xs" placeholder="Сегодня" dropdownOpen={isOpen} type="time" value={timeStart} onChange={setTimeStart} maxDate={maxDate} /></div>
+            <div> <DatePicker style={{ width: 64,margin:0, padding:0}} className={s.datePicker} size="xs" placeholder="Сегодня" dropdownOpen={isOpen} type="time" value={timeFinish} onChange={setTimeFinish} maxDate={maxDate} /></div>
+                        </div>
+        </div>
+        </div>
+      </div>
     </div>
+    <div onClick={()=>setTimesIsView(false)} style={{marginTop:6}}>
     <Table zebraStriped='odd' rows={filteredRows} columns={columns} borderBetweenRows={true} borderBetweenColumns={true} />
+    </div>
     <Modal isOpen={openModal}
       hasOverlay
       onClickOutside={() => setOpenModal(false)}

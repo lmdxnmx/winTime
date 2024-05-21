@@ -68,4 +68,36 @@
     box-sizing: border-box;
     width:100px;
     margin-right:24px;
+}.filterButton{
+    border:1px solid #00426947;
+    border-radius: 4px;
+    padding:0px, 0px, 0px, 8px;
+    margin-right:24px;
+    position: relative;
+    height: 32px;
+}
+.filterLabel{
+    padding:8px;
+    color:#00203359;
+    font-size: 14px;
+    text-align: left;
+}
+.dropDownItemChanges{
+    display: flex;
+    padding: 8px;
+    background-color: #FFF;
+    display: flex;
+    align-items: center;
+    min-width: 100%;
+}.dropDown{
+    position: absolute;
+    z-index: 99;
+    width:100%;
+    background-color: #FFF;
+    top:35px;
+}
+.dropDownItem{
+ display: flex;
+ padding: 8px;
+ background-color: #FFF;
 }
