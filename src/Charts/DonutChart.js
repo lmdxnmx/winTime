@@ -1,20 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { Pie } from '@consta/charts/Pie';
 import axios from 'axios';
+import { da } from 'date-fns/locale';
 
-export const DonutChart = ({ categoriesColor, dateValue }) => {
+export const DonutChart = ({ categoriesColor, dateValue, dataTableIsLoading, changes }) => {
   const [data, setData] = useState([]);
   const [isDataReady, setIsDataReady] = useState(false);
 
-  let today = new Date();
-  let year = today.getFullYear();
-  let month = String(today.getMonth() + 1).padStart(2, '0');
-  let day = String(today.getDate()).padStart(2, '0');
-  let currentDate = `${year}-${month}-${day}`;
-
   useEffect(() => {
     setIsDataReady(false);
+
     const fetchData = async () => {
+      let today = new Date();
+      let year = today.getFullYear();
+      let month = String(today.getMonth() + 1).padStart(2, '0');
+      let day = String(today.getDate()).padStart(2, '0');
+      let currentDate = `${year}-${month}-${day}`;
+
       if (dateValue !== null) {
         const dateObj = new Date(dateValue);
         year = dateObj.getFullYear();
@@ -31,21 +33,81 @@ export const DonutChart = ({ categoriesColor, dateValue }) => {
         }));
 
         const slugs = categoriesColor.map(category => category.slug);
+        const activeChanges = changes.filter(change => change.active);
 
         try {
-          const response = await axios.post(`http://192.168.1.109:8000/machines/pie-view/`, {
-            "machines": ["all"],
-            "states": slugs,
-            "from": `${currentDate}T00:00`,
-            "to": `${currentDate}T23:59`
-          }, {
-            headers: {
-              'access-control-allow-origin': '*',
-              'access-control-allow-credentials': 'true',
-            }
-          });
+          let serverData = {};
 
-          const serverData = response?.data?.percents;
+          if (activeChanges.length === changes.length) {
+            // Все смены активны, делаем один запрос на весь день
+            const response = await axios.post(`http://192.168.1.109:8000/machines/pie-view/`, {
+              "machines": ["all"],
+              "states": slugs,
+              "from": `${currentDate}T00:00`,
+              "to": `${currentDate}T23:59`
+            }, {
+              headers: {
+                'access-control-allow-origin': '*',
+                'access-control-allow-credentials': 'true',
+              }
+            });
+
+            serverData = response?.data?.percents || {};
+          } else {
+            // Проверяем комбинации активных смен
+            const activeIds = activeChanges.map(change => change.id);
+
+            let requests = [];
+            if (activeIds.includes(1) && activeIds.includes(3) && !activeIds.includes(2)) {
+              // Если активны только первая и третья смены, делаем два запроса
+              requests = activeChanges.map(change => {
+                const fromTime = `${currentDate}T${change.startTime}`;
+                const toTime = `${currentDate}T${change.finishTime}`;
+                return axios.post(`http://192.168.1.109:8000/machines/pie-view/`, {
+                  "machines": ["all"],
+                  "states": slugs,
+                  "from": fromTime,
+                  "to": toTime
+                }, {
+                  headers: {
+                    'access-control-allow-origin': '*',
+                    'access-control-allow-credentials': 'true',
+                  }
+                });
+              });
+            } else {
+              // В остальных случаях делаем один запрос для смежных смен
+              const fromTime = `${currentDate}T${activeChanges[0].startTime}`;
+              const toTime = `${currentDate}T${activeChanges[activeChanges.length - 1].finishTime}`;
+              requests = [
+                axios.post(`http://192.168.1.109:8000/machines/pie-view/`, {
+                  "machines": ["all"],
+                  "states": slugs,
+                  "from": fromTime,
+                  "to": toTime
+                }, {
+                  headers: {
+                    'access-control-allow-origin': '*',
+                    'access-control-allow-credentials': 'true',
+                  }
+                })
+              ];
+            }
+
+            const responses = await Promise.all(requests);
+
+            serverData = responses.reduce((acc, response) => {
+              const data = response?.data?.percents;
+              for (const [key, value] of Object.entries(data)) {
+                if (acc[key] !== undefined) {
+                  acc[key] += value;
+                } else {
+                  acc[key] = value;
+                }
+              }
+              return acc;
+            }, {});
+          }
 
           const updatedData = initialData.map(item => {
             const updatedValue = item.slug && serverData[item.slug] !== undefined
@@ -70,8 +132,10 @@ export const DonutChart = ({ categoriesColor, dateValue }) => {
       }
     };
 
-    fetchData();
-  }, [categoriesColor, dateValue]);
+    if (categoriesColor !== null) {
+      fetchData();
+    }
+  }, [categoriesColor, dateValue, changes]);
 
   const sum = (array) => {
     if (!array) return '0';
@@ -90,12 +154,12 @@ export const DonutChart = ({ categoriesColor, dateValue }) => {
     });
     return typeColors;
   };
-
+  const filterChanges = changes.filter((i)=>i.active === true);
   const typeColors = categoriesToTypeColors(categoriesColor);
 
   return (
     <>
-      {isDataReady && data.length > 0 && (
+      {isDataReady && data.length > 0 && dataTableIsLoading === true && (
         <Pie
           style={{
             width: "100%",
@@ -110,7 +174,7 @@ export const DonutChart = ({ categoriesColor, dateValue }) => {
           radius={1}
           statistic={{
             title: {
-              formatter: () => `${sum(data)}%`,
+              formatter: () => `${filterChanges.length === 2 && changes[1].active === false ? sum(data)/2 : sum(data) }%`,
               style: {
                 marginTop: "10px",
                 fontSize: "14px",
@@ -119,7 +183,7 @@ export const DonutChart = ({ categoriesColor, dateValue }) => {
             },
             content: {
               customHtml: () => (
-                <span style={{ fontSize: 0 }}>{sum(data)}%</span>
+                <span style={{ fontSize: 0 }}>{filterChanges.length === 2 && changes[1].active === false ? sum(data)/2 : sum(data) }%</span>
               ),
             },
           }}
@@ -174,4 +238,4 @@ export const DonutChart = ({ categoriesColor, dateValue }) => {
       )}
     </>
   );
-}
+};

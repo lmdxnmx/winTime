@@ -4,11 +4,26 @@ import DropDownMenu from '../DropDownMenu/DropDownMenu';
 import x from "./../images/X.svg"
 import { DatePicker } from '@consta/uikit/DatePicker';
 
-const CategoryChoose = ({ value, setValue, dateValue, setDateValue }) => {
+const CategoryChoose = ({ value, setValue, dateValue, setDateValue, changes, setChanges }) => {
     const [isOpen, setIsOpen] = useState(false);
     const colorRef = useRef();
     const [copyColors, setCopyColors] = useState(value)
     const [colorsOpen, setColorsOpen] = useState(false)
+    const [isOpenChanges, setIsOpenChanges] = useState(false);
+    const refDropChanges = useRef(null);
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+          if (refDropChanges.current && !refDropChanges.current.contains(event.target)) {
+            setIsOpenChanges(false);
+          }
+        };
+    
+        document.addEventListener("click", handleClickOutside);
+    
+        return () => {
+          document.removeEventListener("click", handleClickOutside);
+        };
+      }, []);
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (colorRef.current && !colorRef.current.contains(event.target)) {
@@ -25,6 +40,7 @@ const CategoryChoose = ({ value, setValue, dateValue, setDateValue }) => {
     useEffect(() => {
         if (colorsOpen === false) {
             setValue(copyColors)
+            console.log("44")
         }
     }, [colorsOpen])
     const handleRemoveItem = (index) => {
@@ -57,7 +73,10 @@ const CategoryChoose = ({ value, setValue, dateValue, setDateValue }) => {
                     )
                 })}
             </div>
+            <div style={{display:'flex'}}>
+            <DropDownMenu width={123} label={"Все смены"} refs={refDropChanges} isOpen={isOpenChanges} setIsOpen={setIsOpenChanges} changes={changes} setChanges={setChanges} />
             <DatePicker style={{ width: 100 }} className={s.datePicker} size="s" placeholder="Сегодня" dropdownOpen={isOpen} type="date" value={dateValue} onChange={setDateValue} />
+        </div>
         </div>
     )
 }

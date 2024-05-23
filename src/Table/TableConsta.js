@@ -9,13 +9,14 @@ import { DatePicker } from '@consta/uikit/DatePicker';
 import { Modal } from '@consta/uikit/Modal';
 import axios from 'axios';
 import Calendar from "./../images/Calendar.svg"
-export const TableConsta = ({ machines }) => {
+export const TableConsta = ({ machines, setDataTableIsLoading }) => {
 
   const [dateValue, setDateValue] = useState(null);
   const [timeStart, setTimeStart] = useState(null);
   const [timeFinish, setTimeFinish] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
   const [isOpenChanges, setIsOpenChanges] = useState(false);
+  const [machineTimeWork, setMachineTimeWork] = useState([]);
   const [isOpenMachines, setIsOpenMachines] = useState(false);
   const [openModal, setOpenModal] = useState(false)
   const refDropMachines = useRef(null);
@@ -25,37 +26,127 @@ export const TableConsta = ({ machines }) => {
   const today = new Date();
   const year = today.getFullYear();
   const month = String(today.getMonth()).padStart(2, '0');
+  const dayQeary = String(today.getDate()).padStart(2, '0');
+  const monthQearu =String(today.getMonth() + 1).padStart(2, '0');
   const day = String(today.getDate() + 1).padStart(2, '0');
   const maxDate = new Date(year, month, day);
+  let currentDate = `${year}-${monthQearu}-${dayQeary}`;
+
   const data = [{
     color: "#FF8C00",
     percent: 10,
   },
   { color: "#32CD32", percent: 35 }]
   const [rows, setRows] = useState([]);
+
   useEffect(() => {
     if (machines.length > 0) {
-      const newChartData = machines.map(machine => ({
-        name: machine.name,
-        serial: machine.slug,
-        percent: "50%",
-        loadDay: [{
-          color: "#FF8C00",
-          percent: 10,
-        },
-        {
-          color: "#32CD32",
-          percent: 35
+      let isMounted = true; // Флаг для проверки, что компонент все еще смонтирован
+  
+      const fetchData = async () => {
+        try {
+          const requests = machines.map(async mach => {
+            const response = await axios.get(`http://192.168.1.109:8000/machine/${mach.slug}/states?from=${currentDate}T00:00&to=${currentDate}T23:59`);
+            console.log(response)
+            return { machine: mach.slug, states: response.data.states };
+          });
+  
+          const machineTimeWorkData = await Promise.all(requests);
+  
+          if (isMounted) {
+            setMachineTimeWork(prevState => {
+              return [
+                ...prevState,
+                ...machineTimeWorkData.flatMap(({ machine, states }) =>
+                  Object.entries(states).map(([time, value]) => ({ time, value, machine }))
+                )
+              ];
+            });
+            setDataTableIsLoading(true);
+          }
+        } catch (error) {
+          console.error(error);
+          setDataTableIsLoading(true);
         }
-        ],
-        programm: "xLk_051",
-        sum: 124230
-      }));
-      setRows(newChartData)
-      setFilteredRows(newChartData)
+      };
+  
+      fetchData();
+  
+      return () => {
+        isMounted = false; // Устанавливаем флаг в false при размонтировании компонента
+      };
     }
-  }, [machines]);
+  }, [machines, currentDate]);
+  
 
+  useEffect(() => {
+    if (machineTimeWork.length > 0) {
+      const newData = machines.map(machine => {
+        const machineData = machineTimeWork.filter(data => data.machine === machine.slug); // Фильтруем данные по текущему станку
+        let loadDay = [];
+        let lastEndTime = new Date(currentDate + 'T23:59:59'); // Инициализируем время окончания последнего состояния
+  
+        // Проходим по данным о времени работы станка
+        machineData.forEach(data => {
+          const startTime = new Date(data.time); // Время начала работы
+          const endTime = new Date(data.time); // Время окончания работы
+  
+          // Определение цвета в зависимости от статуса работы
+          let statusColor;
+          switch (data.value) {
+            case 'on':
+              statusColor = "#32CD32"; // orange
+              break;
+            case 'off':
+              statusColor = "#FF8C00" ; // green
+              break;
+            case 'work':
+              statusColor = "#1E90FF"; // blue
+              break;
+            default:
+              statusColor = "#000000"; // black (default color)
+              break;
+          }
+  
+          // Вычисляем длительность работы
+          let workingTime;
+          if (machineData.indexOf(data) === machineData.length - 1) { // Если это последнее состояние
+            endTime.setHours(23, 59, 59, 999); // Устанавливаем время окончания на конец дня
+            workingTime = endTime.getTime() - startTime.getTime();
+          } else {
+            workingTime = startTime.getTime() - lastEndTime.getTime();
+          }
+          const workingPercentage = (workingTime / (1000 * 60 * 60 * 24)) * 100; // Процент времени работы
+  
+          // Добавляем объект в loadDay
+          loadDay.push({
+            color: statusColor,
+            percent: workingPercentage,
+            machine: machine.slug,
+            startTime: lastEndTime, // Время начала работы равно времени окончания предыдущего состояния
+            endTime: endTime // Время окончания работы равно времени начала текущего состояния
+          });
+  
+          lastEndTime = endTime; // Обновляем время окончания последнего состояния
+        });
+  
+        return {
+          name: machine.name,
+          serial: machine.slug,
+          percent: "50%", // Примерный процент (можно заменить на реальное значение)
+          loadDay: loadDay,
+          programm: "xLk_051",
+          sum: 124230
+        };
+      });
+  
+      setRows(newData);
+      setFilteredRows(newData);
+    }
+  }, [machineTimeWork, machines, currentDate]);
+  
+  
+  
   const [filteredRows, setFilteredRows] = useState(rows)
   const columns = [
     {
@@ -89,7 +180,8 @@ export const TableConsta = ({ machines }) => {
       align: "center",
       sortable: false,
       renderCell: (row) => (
-        <div className={`${s.progress_cell}`} onClick={() => setOpenModal(true)}>  <ProgressBar label={row.loadDay} />
+        <div className={`${s.progress_cell}`} onClick={() => openHourlyModal(row.serial)}>  
+          <ProgressBar label={row.loadDay} />
           <div className={s.load_time}>
             <span>00:00</span>
             <span>06:00</span>
@@ -98,7 +190,6 @@ export const TableConsta = ({ machines }) => {
             <span>23:59</span>
           </div>
         </div>
-
       ),
       width: 412
     },
@@ -143,7 +234,119 @@ export const TableConsta = ({ machines }) => {
       document.removeEventListener("click", handleClickOutside);
     };
   }, []);
+  const calculateHourlyData = (data, machine) => {
+    const hourlyData = Array(24).fill(null).map(() => ({
+        onTime: 0,
+        offTime: 0,
+        workTime: 0
+    }));
 
+    data = data.filter(item => item.machine === machine); // Отфильтруем данные по станку
+
+    for (let hour = 0; hour < 24; hour++) {
+        const startHour = new Date();
+        startHour.setHours(hour, 0, 0, 0);
+        const endHour = new Date(startHour);
+        endHour.setHours(hour + 1, 0, 0, 0);
+
+        let lastTime = startHour;
+        let lastState = 'off'; // Начальное состояние, если данных нет
+
+        data.forEach((item, index) => {
+            const itemTime = new Date(item.time);
+
+            if (itemTime >= startHour && itemTime < endHour) {
+                const duration = itemTime - lastTime;
+                switch (lastState) {
+                    case 'on':
+                        hourlyData[hour].onTime += duration;
+                        break;
+                    case 'off':
+                        hourlyData[hour].offTime += duration;
+                        break;
+                    case 'work':
+                        hourlyData[hour].workTime += duration;
+                        break;
+                }
+                lastState = item.value;
+                lastTime = itemTime;
+            }
+
+            if (index === data.length - 1 || new Date(data[index + 1].time) >= endHour) {
+                const remainingTime = endHour - lastTime;
+                switch (lastState) {
+                    case 'on':
+                        hourlyData[hour].onTime += remainingTime;
+                        break;
+                    case 'off':
+                        hourlyData[hour].offTime += remainingTime;
+                        break;
+                    case 'work':
+                        hourlyData[hour].workTime += remainingTime;
+                        break;
+                }
+            }
+        });
+    }
+
+    const msInHour = 3600000; // Количество миллисекунд в часе
+    const formattedHourlyData = [];
+
+    hourlyData.forEach((hourData, hour) => {
+        const totalTime = hourData.onTime + hourData.offTime + hourData.workTime;
+        if (totalTime > 0) {
+            if (hourData.onTime > 0) {
+                formattedHourlyData.push({
+                    hour,
+                    percent: (hourData.onTime / msInHour) * 100,
+                    color: "#32CD32" // зеленый
+                });
+            }
+            if (hourData.offTime > 0) {
+                formattedHourlyData.push({
+                    hour,
+                    percent: (hourData.offTime / msInHour) * 100,
+                    color: "#FF8C00" // оранжевый
+                });
+            }
+            if (hourData.workTime > 0) {
+                formattedHourlyData.push({
+                    hour,
+                    percent: (hourData.workTime / msInHour) * 100,
+                    color: "#1E90FF" // синий
+                });
+            }
+        } else {
+            formattedHourlyData.push({
+                hour,
+                percent: 100,
+                color: "#FF8C00" // оранжевый по умолчанию, если данных нет
+            });
+        }
+    });
+
+    return formattedHourlyData;
+};
+
+
+  const [hourlyData, setHourlyData] = useState([]);
+const [selectedMachine, setSelectedMachine] = useState(null);
+
+const openHourlyModal = (machine) => {
+  const data = calculateHourlyData(machineTimeWork, machine);
+  setHourlyData(data);
+  setSelectedMachine(machine);
+  setOpenModal(true);
+};
+
+const closeModal = () => {
+  setOpenModal(false);
+  setHourlyData([]);
+  setSelectedMachine(null);
+};
+useEffect(()=>{
+  console.log(machineTimeWork)
+},[machineTimeWork])
 
   return (<div style={{ minHeight: "50vh" }}>
     <h1 className={s.title}>Перечень и загрузка оборудования</h1>
@@ -201,143 +404,33 @@ export const TableConsta = ({ machines }) => {
     <Table zebraStriped='odd' rows={filteredRows} columns={columns} borderBetweenRows={true} borderBetweenColumns={true} />
     </div>
     <Modal isOpen={openModal}
-      hasOverlay
-      onClickOutside={() => setOpenModal(false)}
-      onEsc={() => setOpenModal(false)}
-    >
-      <div style={{ height: "700px", width: 820, paddingLeft: "24px", paddingRight: "24px" }} onClick={() => setOpenModal(true)}>
-        <h3>Подробный отчет</h3>
-        <span style={{ color: '#002033', fontSize: '12px', paddingTop: '16px' }}>1 смена</span>
-        <div style={{ display: 'flex', width: '100%', alignItems: 'center', marginTop: 16 }}>
-          <span style={{ color: "#00203399", fontSize: "14px", whiteSpace: "nowrap" }}>00:00 - 00:59</span>
-
-          <div style={{ display: 'flex', flexDirection: 'column', width: '100%', marginLeft: 24 }}>
-            <ProgressBar label={data} />
-            <div className={s.load_time}>
-              <span>00</span>
-              <span>10</span>
-              <span>20</span>
-              <span>30</span>
-              <span>40</span>
-              <span>50</span>
-              <span>60</span>
-            </div>
+  hasOverlay
+  onClickOutside={closeModal}
+  onEsc={closeModal}
+>
+  <div style={{ height: "700px", width: 820, paddingLeft: "24px", paddingRight: "24px" }}>
+    <h3>Подробный отчет: {selectedMachine}</h3>
+    {hourlyData.map((hourData, index) => (
+      <div key={index} style={{ display: 'flex', width: '100%', alignItems: 'center', marginTop: 16 }}>
+        <span style={{ color: "#00203399", fontSize: "14px", whiteSpace: "nowrap" }}>
+          {hourData.hour}:00 - {hourData.hour}:59
+        </span>
+        <div style={{ display: 'flex', flexDirection: 'column', width: '100%', marginLeft: 24 }}>
+          <ProgressBar label={[{ color: hourData.color, percent: hourData.percent }]} />
+          <div className={s.load_time}>
+            <span>00</span>
+            <span>10</span>
+            <span>20</span>
+            <span>30</span>
+            <span>40</span>
+            <span>50</span>
+            <span>60</span>
           </div>
         </div>
-        <div style={{ display: 'flex', width: '100%', alignItems: 'center', marginTop: 16 }}>
-          <span style={{ color: "#00203399", fontSize: "14px", whiteSpace: "nowrap" }}>01:00 - 01:59</span>
-
-          <div style={{ display: 'flex', flexDirection: 'column', width: '100%', marginLeft: 24 }}>
-            <ProgressBar label={data} />
-            <div className={s.load_time}>
-              <span>00</span>
-              <span>10</span>
-              <span>20</span>
-              <span>30</span>
-              <span>40</span>
-              <span>50</span>
-              <span>60</span>
-            </div>
-          </div>
-        </div>
-        <div style={{ display: 'flex', width: '100%', alignItems: 'center', marginTop: 16 }}>
-          <span style={{ color: "#00203399", fontSize: "14px", whiteSpace: "nowrap" }}>02:00 - 02:59</span>
-
-          <div style={{ display: 'flex', flexDirection: 'column', width: '100%', marginLeft: 24 }}>
-            <ProgressBar label={data} />
-            <div className={s.load_time}>
-              <span>00</span>
-              <span>10</span>
-              <span>20</span>
-              <span>30</span>
-              <span>40</span>
-              <span>50</span>
-              <span>60</span>
-            </div>
-          </div>
-        </div>
-        <div style={{ display: 'flex', width: '100%', alignItems: 'center', marginTop: 16 }}>
-          <span style={{ color: "#00203399", fontSize: "14px", whiteSpace: "nowrap" }}>03:00 - 03:59</span>
-
-          <div style={{ display: 'flex', flexDirection: 'column', width: '100%', marginLeft: 24 }}>
-            <ProgressBar label={data} />
-            <div className={s.load_time}>
-              <span>00</span>
-              <span>10</span>
-              <span>20</span>
-              <span>30</span>
-              <span>40</span>
-              <span>50</span>
-              <span>60</span>
-            </div>
-          </div>
-        </div>
-        <div style={{ display: 'flex', width: '100%', alignItems: 'center', marginTop: 16 }}>
-          <span style={{ color: "#00203399", fontSize: "14px", whiteSpace: "nowrap" }}>04:00 - 04:59</span>
-
-          <div style={{ display: 'flex', flexDirection: 'column', width: '100%', marginLeft: 24 }}>
-            <ProgressBar label={data} />
-            <div className={s.load_time}>
-              <span>00</span>
-              <span>10</span>
-              <span>20</span>
-              <span>30</span>
-              <span>40</span>
-              <span>50</span>
-              <span>60</span>
-            </div>
-          </div>
-        </div>
-        <div style={{ display: 'flex', width: '100%', alignItems: 'center', marginTop: 16 }}>
-          <span style={{ color: "#00203399", fontSize: "14px", whiteSpace: "nowrap" }}>05:00 - 05:59</span>
-
-          <div style={{ display: 'flex', flexDirection: 'column', width: '100%', marginLeft: 24 }}>
-            <ProgressBar label={data} />
-            <div className={s.load_time}>
-              <span>00</span>
-              <span>10</span>
-              <span>20</span>
-              <span>30</span>
-              <span>40</span>
-              <span>50</span>
-              <span>60</span>
-            </div>
-          </div>
-        </div>
-        <div style={{ display: 'flex', width: '100%', alignItems: 'center', marginTop: 16 }}>
-          <span style={{ color: "#00203399", fontSize: "14px", whiteSpace: "nowrap" }}>06:00 - 06:59</span>
-
-          <div style={{ display: 'flex', flexDirection: 'column', width: '100%', marginLeft: 24 }}>
-            <ProgressBar label={data} />
-            <div className={s.load_time}>
-              <span>00</span>
-              <span>10</span>
-              <span>20</span>
-              <span>30</span>
-              <span>40</span>
-              <span>50</span>
-              <span>60</span>
-            </div>
-          </div>
-        </div>
-        <div style={{ display: 'flex', width: '100%', alignItems: 'center', marginTop: 16 }}>
-          <span style={{ color: "#00203399", fontSize: "14px", whiteSpace: "nowrap" }}>07:00 - 07:59</span>
-
-          <div style={{ display: 'flex', flexDirection: 'column', width: '100%', marginLeft: 24 }}>
-            <ProgressBar label={data} />
-            <div className={s.load_time}>
-              <span>00</span>
-              <span>10</span>
-              <span>20</span>
-              <span>30</span>
-              <span>40</span>
-              <span>50</span>
-              <span>60</span>
-            </div>
-          </div>
-        </div>
-
       </div>
-    </Modal>
+    ))}
+  </div>
+</Modal>
+
   </div>);
 };
