@@ -3,7 +3,7 @@ import s from "./dropDownMenu.module.css";
 import { Checkbox } from '@consta/uikit/Checkbox';
 import { IconArrowDown } from "@consta/icons/IconArrowDown"
 import { IconArrowUp } from "@consta/icons/IconArrowUp"
-const DropDownMenu = ({ label, refs, width, isOpen, setIsOpen, value, setValue,machines, setFilteredRows, rows, }) => {
+const DropDownMenu = ({ label, refs, width, isOpen, setIsOpen, value, setValue,machines, setFilteredRows, rows, setChanges }) => {
     const [valueMachines, setValueMachines] = useState([
         { label: "DOOSAN 2600LY", active: true, id: 1 }, 
         { label: "DOOSAN 2700LY", active: true, id: 2 },

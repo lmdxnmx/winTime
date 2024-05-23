@@ -10,6 +10,11 @@ const MainPage = () => {
   const [categoriesColor, setCategoriesColors] = useState([]);
   const [machines, setMachines] = useState([]);
   const [dateValue, setDateValue] = useState(null);
+  const [changes,setChanges] = useState([{
+    "00:00": "07:59",id:1},
+    {"08:00": "16:59",id:2},
+    {"17:00": "23:59",id:3}
+  ])
   const [isLoading, setIsLoading] = useState(true);
   const [machineTimeWork, setMachineTimeWork] = useState([]);
 
@@ -81,7 +86,7 @@ const MainPage = () => {
           )}
         </div>
         <div className="lineContainer">
-          <CategoryChoose dateValue={dateValue} setDateValue={setDateValue} value={categoriesColor} setValue={setCategoriesColors} />
+          <CategoryChoose setChanges={setChanges} changes={changes} dateValue={dateValue} setDateValue={setDateValue} value={categoriesColor} setValue={setCategoriesColors} />
           {!isLoading && (
             <LineChart dateValue={dateValue} categoriesColor={categoriesColor} />
           )}
