@@ -10,7 +10,25 @@ import { Modal } from '@consta/uikit/Modal';
 import axios from 'axios';
 import Calendar from "./../images/Calendar.svg"
 export const TableConsta = ({ machines, setDataTableIsLoading }) => {
-
+  const [changes, setChanges] = useState([{
+    change:"1 смена",
+    startTime: "00:00:00",
+    finishTime:"00:08:00",
+    id:1,
+    active:true
+  },{
+    change:"2 смена",
+    startTime: "00:08:00",
+    finishTime:"16:00:00",
+    id:2,
+    active:true
+  },{
+    change:"3 смена",
+    startTime: "16:00:00",
+    finishTime:"23:59:59",
+    id:3,
+    active:true
+  }])
   const [dateValue, setDateValue] = useState(null);
   const [timeStart, setTimeStart] = useState(null);
   const [timeFinish, setTimeFinish] = useState(null);
@@ -31,12 +49,7 @@ export const TableConsta = ({ machines, setDataTableIsLoading }) => {
   const day = String(today.getDate() + 1).padStart(2, '0');
   const maxDate = new Date(year, month, day);
   let currentDate = `${year}-${monthQearu}-${dayQeary}`;
-
-  const data = [{
-    color: "#FF8C00",
-    percent: 10,
-  },
-  { color: "#32CD32", percent: 35 }]
+  const [fetchNewData,setFetchNewData] = useState(false);
   const [rows, setRows] = useState([]);
 
   useEffect(() => {
@@ -77,28 +90,103 @@ export const TableConsta = ({ machines, setDataTableIsLoading }) => {
       };
     }
   }, [machines, currentDate]);
+   const getTimeFromStart = (startTime)=>{
+    if(startTime !== null){
+      const dateObj = new Date(startTime);
+      let hour = dateObj.getHours();
+      let minute = dateObj.getMinutes();
+      if(hour < 10){
+       hour = `0${hour}`;
+      }
+      if(minute < 10){
+        minute = `${minute}0`
+      }
+      return `${hour}:${minute}`;
+      }else{
+        return "00:00"
+      }
   
+   }
+   const getTimeFromFinish = (finishTime) =>{
+    if(finishTime !== null){
+      const dateObj = new Date(finishTime);
+      let hour = dateObj.getHours();
+      let minute = dateObj.getMinutes();
+      if(hour < 10){
+       hour = `0${hour}`;
+      }
+      if(minute < 10){
+        minute = `${minute}`
+      }
+      return`${hour}:${minute}0`;
+    }else{
+      return '23:59'
+    }
+   }
+    const fetchData = async (date,startTime, finishTime) => {
+      let newDate = currentDate;
+      let newStartTime = "00:00";
+      let newfinishTime = "23:59"
+      if(date !== null){
+      const dateObj = new Date(date);
+      const year = dateObj.getFullYear();
+      const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const day = String(dateObj.getDate()).padStart(2, '0');
+      newDate = `${year}-${month}-${day}`;
+      }
+      if(startTime !== null){
+      newStartTime =  getTimeFromStart(startTime)
+        }
+        if(finishTime !== null){
+            
+          newfinishTime = getTimeFromFinish(finishTime);
+        }
+        try {
+          const requests = machines.map(async mach => {
+            setMachineTimeWork([])
+            const response = await axios.get(`http://192.168.1.109:8000/machine/${mach.slug}/states?from=${newDate}T${newStartTime}&to=${newDate}T${newfinishTime}`);
+            console.log(response)
+            return { machine: mach.slug, states: response.data.states };
+          });
+  
+          const machineTimeWorkData = await Promise.all(requests);
+  
+            setMachineTimeWork(prevState => {
+              return [
+                ...prevState,
+                ...machineTimeWorkData.flatMap(({ machine, states }) =>
+                  Object.entries(states).map(([time, value]) => ({ time, value, machine }))
+                )
+              ];
+            });
+            setFetchNewData(true);
+            setDataTableIsLoading(true);
+        } catch (error) {
+          console.error(error);
+          setDataTableIsLoading(true);
+        }
+      };
 
   useEffect(() => {
     if (machineTimeWork.length > 0) {
       const newData = machines.map(machine => {
         const machineData = machineTimeWork.filter(data => data.machine === machine.slug); // Фильтруем данные по текущему станку
         let loadDay = [];
-        let lastEndTime = new Date(currentDate + 'T23:59:59'); // Инициализируем время окончания последнего состояния
+        let lastEndTime = new Date(currentDate + 'T00:00:00'); // Инициализируем время окончания последнего состояния на начало дня
+        let totalTimeWork = 0; // Общее время работы в миллисекундах
   
         // Проходим по данным о времени работы станка
-        machineData.forEach(data => {
+        machineData.forEach((data, index) => {
           const startTime = new Date(data.time); // Время начала работы
-          const endTime = new Date(data.time); // Время окончания работы
   
           // Определение цвета в зависимости от статуса работы
           let statusColor;
           switch (data.value) {
             case 'on':
-              statusColor = "#32CD32"; // orange
+              statusColor = "#32CD32"; // green
               break;
             case 'off':
-              statusColor = "#FF8C00" ; // green
+              statusColor = "#FF8C00"; // orange
               break;
             case 'work':
               statusColor = "#1E90FF"; // blue
@@ -110,30 +198,38 @@ export const TableConsta = ({ machines, setDataTableIsLoading }) => {
   
           // Вычисляем длительность работы
           let workingTime;
-          if (machineData.indexOf(data) === machineData.length - 1) { // Если это последнее состояние
-            endTime.setHours(23, 59, 59, 999); // Устанавливаем время окончания на конец дня
+          if (index === machineData.length - 1) { // Если это последнее состояние
+            const endTime = new Date(currentDate + 'T23:59:59'); // Устанавливаем время окончания на конец дня
             workingTime = endTime.getTime() - startTime.getTime();
           } else {
-            workingTime = startTime.getTime() - lastEndTime.getTime();
+            const nextTime = new Date(machineData[index + 1].time); // Время начала следующего состояния
+            workingTime = nextTime.getTime() - startTime.getTime();
           }
+          
+          if (data.value === 'work') {
+            totalTimeWork += workingTime;
+          }
+  
           const workingPercentage = (workingTime / (1000 * 60 * 60 * 24)) * 100; // Процент времени работы
+          console.log(workingPercentage, workingTime)
   
           // Добавляем объект в loadDay
           loadDay.push({
             color: statusColor,
             percent: workingPercentage,
             machine: machine.slug,
-            startTime: lastEndTime, // Время начала работы равно времени окончания предыдущего состояния
-            endTime: endTime // Время окончания работы равно времени начала текущего состояния
+            startTime: startTime, 
+            endTime: new Date(startTime.getTime() + workingTime) 
           });
   
-          lastEndTime = endTime; // Обновляем время окончания последнего состояния
+          lastEndTime = new Date(startTime.getTime() + workingTime); 
         });
   
+        const totalWorkPercentage = (totalTimeWork / (1000 * 60 * 60 * 24)) * 100; 
         return {
           name: machine.name,
           serial: machine.slug,
-          percent: "50%", // Примерный процент (можно заменить на реальное значение)
+          percent: totalWorkPercentage.toFixed(2) + "%", 
           loadDay: loadDay,
           programm: "xLk_051",
           sum: 124230
@@ -144,9 +240,7 @@ export const TableConsta = ({ machines, setDataTableIsLoading }) => {
       setFilteredRows(newData);
     }
   }, [machineTimeWork, machines, currentDate]);
-  
-  
-  
+
   const [filteredRows, setFilteredRows] = useState(rows)
   const columns = [
     {
@@ -181,14 +275,14 @@ export const TableConsta = ({ machines, setDataTableIsLoading }) => {
       sortable: false,
       renderCell: (row) => (
         <div className={`${s.progress_cell}`} onClick={() => openHourlyModal(row.serial)}>  
-          <ProgressBar label={row.loadDay} />
-          <div className={s.load_time}>
-            <span>00:00</span>
-            <span>06:00</span>
-            <span>12:00</span>
-            <span>18:00</span>
-            <span>23:59</span>
-          </div>
+          {fetchNewData === true && (timeStart !== null || timeFinish !==null) ?     
+          
+          <ProgressBar label={row.loadDay} date={[getTimeFromStart(timeStart), getTimeFromFinish(timeFinish)]} />: <ProgressBar label={row.loadDay} date={["00:00",
+          "06:00",
+           "12:00",
+            "18:00",
+            "23:59",]} />}
+      
         </div>
       ),
       width: 412
@@ -241,92 +335,82 @@ export const TableConsta = ({ machines, setDataTableIsLoading }) => {
         workTime: 0
     }));
 
-    data = data.filter(item => item.machine === machine); // Отфильтруем данные по станку
+    data = data.filter(item => item.machine === machine); // Фильтруем данные для конкретной машины
 
-    for (let hour = 0; hour < 24; hour++) {
-        const startHour = new Date();
-        startHour.setHours(hour, 0, 0, 0);
+    let previousTime = new Date(0); // Инициализируем предыдущее время
+
+    data.forEach((item, index) => {
+        const itemTime = new Date(item.time);
+        const currentHour = itemTime.getHours(); // Текущий час
+
+        const startHour = new Date(itemTime);
+        startHour.setMinutes(0, 0, 0); // Устанавливаем минуты на 0 для начала часа
         const endHour = new Date(startHour);
-        endHour.setHours(hour + 1, 0, 0, 0);
+        endHour.setHours(endHour.getHours() + 1); // Конец часа
 
-        let lastTime = startHour;
-        let lastState = 'off'; // Начальное состояние, если данных нет
+        const duration = itemTime - previousTime;
 
-        data.forEach((item, index) => {
-            const itemTime = new Date(item.time);
+        switch (item.value) {
+            case 'on':
+                hourlyData[currentHour].onTime += duration;
+                break;
+            case 'off':
+                hourlyData[currentHour].offTime += duration;
+                break;
+            case 'work':
+                hourlyData[currentHour].workTime += duration;
+                break;
+        }
 
-            if (itemTime >= startHour && itemTime < endHour) {
-                const duration = itemTime - lastTime;
-                switch (lastState) {
-                    case 'on':
-                        hourlyData[hour].onTime += duration;
-                        break;
-                    case 'off':
-                        hourlyData[hour].offTime += duration;
-                        break;
-                    case 'work':
-                        hourlyData[hour].workTime += duration;
-                        break;
-                }
-                lastState = item.value;
-                lastTime = itemTime;
-            }
+        previousTime = itemTime;
+    });
 
-            if (index === data.length - 1 || new Date(data[index + 1].time) >= endHour) {
-                const remainingTime = endHour - lastTime;
-                switch (lastState) {
-                    case 'on':
-                        hourlyData[hour].onTime += remainingTime;
-                        break;
-                    case 'off':
-                        hourlyData[hour].offTime += remainingTime;
-                        break;
-                    case 'work':
-                        hourlyData[hour].workTime += remainingTime;
-                        break;
-                }
-            }
-        });
-    }
-
-    const msInHour = 3600000; // Количество миллисекунд в часе
+    const msInHour = 3600000; // Миллисекунд в часе
     const formattedHourlyData = [];
 
     hourlyData.forEach((hourData, hour) => {
         const totalTime = hourData.onTime + hourData.offTime + hourData.workTime;
         if (totalTime > 0) {
-            if (hourData.onTime > 0) {
+            const totalWorkPercentage = (hourData.workTime / totalTime) * 100;
+            const totalOnPercentage = (hourData.onTime / totalTime) * 100;
+            const totalOffPercentage = (hourData.offTime / totalTime) * 100;
+
+            if (totalOnPercentage > 0) {
                 formattedHourlyData.push({
                     hour,
-                    percent: (hourData.onTime / msInHour) * 100,
-                    color: "#32CD32" // зеленый
+                    percent: totalOnPercentage,
+                    color: "#32CD32" // Зеленый
                 });
             }
-            if (hourData.offTime > 0) {
+            if (totalOffPercentage > 0) {
                 formattedHourlyData.push({
                     hour,
-                    percent: (hourData.offTime / msInHour) * 100,
-                    color: "#FF8C00" // оранжевый
+                    percent: totalOffPercentage,
+                    color: "#FF8C00" // Оранжевый
                 });
             }
-            if (hourData.workTime > 0) {
+            if (totalWorkPercentage > 0) {
                 formattedHourlyData.push({
                     hour,
-                    percent: (hourData.workTime / msInHour) * 100,
-                    color: "#1E90FF" // синий
+                    percent: totalWorkPercentage,
+                    color: "#1E90FF" // Синий
                 });
             }
         } else {
             formattedHourlyData.push({
                 hour,
                 percent: 100,
-                color: "#FF8C00" // оранжевый по умолчанию, если данных нет
+                color: "#FF8C00" // По умолчанию оранжевый, если данных нет
             });
         }
     });
 
     return formattedHourlyData;
 };
+
+
+
+
 
 
   const [hourlyData, setHourlyData] = useState([]);
@@ -365,7 +449,7 @@ useEffect(()=>{
       </div>
       <div style={{ display: 'flex', flexDirection: 'column' }} onClick={()=>setTimesIsView(false)}>
         <span style={{ color: "#00203399", textAlign: 'left', paddingBottom: 4, fontSize: 14 }}>Смена</span>
-        <DropDownMenu width={123} label={"Все смены"} refs={refDropChanges} isOpen={isOpenChanges} setIsOpen={setIsOpenChanges} />
+        <DropDownMenu width={123} label={"Все смены"} refs={refDropChanges} isOpen={isOpenChanges} setIsOpen={setIsOpenChanges} changes={changes} setChanges={setChanges} />
       </div>
       <div style={{ display: 'flex', flexDirection: 'column' }} onClick={()=>setTimesIsView(false)}>
         <span style={{ color: "#00203399", textAlign: 'left', paddingBottom: 4, fontSize: 14 }}>Дата</span>
@@ -397,8 +481,18 @@ useEffect(()=>{
             <div> <DatePicker style={{ width: 64,margin:0, padding:0}} className={s.datePicker} size="xs" placeholder="Сегодня" dropdownOpen={isOpen} type="time" value={timeFinish} onChange={setTimeFinish} maxDate={maxDate} /></div>
                         </div>
         </div>
+  
         </div>
+    
       </div>
+      {console.log(dateValue)}
+      {(dateValue !== null || timeStart !== null || timeFinish !== null) &&
+      <div style={{backgroundColor:"#4682B4",display:'flex',marginTop:'auto',height:'32px',borderRadius:"10px",width:'60px', justifyContent:'center',alignItems:'center'}} onClick={()=>{
+        
+        fetchData(dateValue, timeStart, timeFinish)
+      }}>
+          <span style={{fontSize:14, color:'white',padding:8, textAlign:'center',fontWeight:700}}>OK</span>
+        </div>}
     </div>
     <div onClick={()=>setTimesIsView(false)} style={{marginTop:6}}>
     <Table zebraStriped='odd' rows={filteredRows} columns={columns} borderBetweenRows={true} borderBetweenColumns={true} />
@@ -432,5 +526,4 @@ useEffect(()=>{
   </div>
 </Modal>
 
-  </div>);
-};
+  </div>);};

@@ -47,17 +47,13 @@ export const LineChart = ({ categoriesColor, dateValue, dataTableIsLoading, chan
           };
 
           const generateTimesForChange = (change) => {
-            const startHour = parseInt(change.startTime.split(':')[0]);
-            const endHour = parseInt(change.finishTime.split(':')[0]);
             let times = [];
-            for (let hour = startHour; hour <= endHour; hour += 4) {
-              if (hour === 7 || hour === 15) continue; // Remove 07:00 and 15:00
-              times.push(`${String(hour).padStart(2, '0')}:00:00`);
-            }
-            if (endHour % 4 !== 0 && !times.includes(`${String(endHour).padStart(2, '0')}:00:00`)) {
-              if (endHour !== 7 && endHour !== 15) {
-                times.push(`${String(endHour).padStart(2, '0')}:00:00`);
-              }
+            if (change.id === 1) {
+              times = ['00:00:00', '04:00:00', '08:00:00'];
+            } else if (change.id === 2) {
+              times = ['08:00:00', '12:00:00', '16:00:00'];
+            } else if (change.id === 3) {
+              times = ['16:00:00', '20:00:00', '23:59:59'];
             }
             return times;
           };
@@ -76,29 +72,14 @@ export const LineChart = ({ categoriesColor, dateValue, dataTableIsLoading, chan
               });
             });
 
-            // Remove entries with `:59:59` if corresponding `:00:00` exists
-            const filteredData = Object.fromEntries(
-              Object.entries(combinedData).filter(([key]) => {
-                if (key.endsWith(':59:59')) {
-                  const correspondingKey = key.replace(':59:59', ':00:00');
-                  return !combinedData[correspondingKey];
-                }
-                return true;
-              })
-            );
-
-            // Replace `23:00:00` with `00:00:00` if such an entry exists
-            const adjustedData = {};
-            Object.entries(filteredData).forEach(([key, value]) => {
-              if (key.endsWith('23:00:00')) {
-                const newKey = key.replace('23:00:00', '23:59:59');
-                adjustedData[newKey] = value;
-              } else {
-                adjustedData[key] = value;
-              }
+            // Удаление дубликатов временных меток
+            const uniqueTimestamps = [...new Set(Object.keys(combinedData))].sort();
+            const filteredData = {};
+            uniqueTimestamps.forEach((timestamp) => {
+              filteredData[timestamp] = combinedData[timestamp];
             });
 
-            return adjustedData;
+            return filteredData;
           };
 
           const activeChangePromises = activeChanges.map(fetchDataForChange);

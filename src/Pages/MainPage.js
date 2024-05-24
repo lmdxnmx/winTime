@@ -13,13 +13,13 @@ const MainPage = () => {
   const [changes, setChanges] = useState([{
     change:"1 смена",
     startTime: "00:00:00",
-    finishTime:"07:59:59",
+    finishTime:"00:08:00",
     id:1,
     active:true
   },{
     change:"2 смена",
     startTime: "00:08:00",
-    finishTime:"15:59:59",
+    finishTime:"16:00:00",
     id:2,
     active:true
   },{
