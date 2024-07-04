@@ -1,8 +1,8 @@
 import React from 'react'
 import "./CommonComponents.css"
-const ButtonBlock = ({name}) => {
+const ButtonBlock = ({name, signalType, setSignalType}) => {
   return (
-    <div className="btnBlock">{name}</div>
+    <div className="btnBlock" style={{backgroundColor:name === signalType ?"#00426912" : ""}} onClick={()=>setSignalType(name)}>{name}</div>
   )
 }
 

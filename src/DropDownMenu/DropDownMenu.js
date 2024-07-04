@@ -25,7 +25,6 @@ const DropDownMenu = ({ label, refs, width, isOpen, setIsOpen, value, setValue,m
         }
       }, [machines]);
       useEffect(()=>{
-        console.log("?///////////412412", changes)
         if (changes?.length > 0) {
             const newValueChanges = changes.map(change => ({
               change: change.change, 
@@ -38,9 +37,7 @@ const DropDownMenu = ({ label, refs, width, isOpen, setIsOpen, value, setValue,m
             setValueChanges(newValueChanges);
           }
       },[changes])
-  useEffect(()=>{
-    console.log(valueChanges)
-  },[valueChanges])
+
 
     const handleMenuClick = (event) => {
         event.stopPropagation();
@@ -53,9 +50,65 @@ const DropDownMenu = ({ label, refs, width, isOpen, setIsOpen, value, setValue,m
         setFilteredRows(filtered);
     };
     const getItemChangesOnClick = (item) => {
-        setValueChanges(prevValue => prevValue.map(prevItem => prevItem.id === item.id ? { ...prevItem, active: !prevItem.active } : prevItem))
-        const activeChanges = valueChanges.map(machine => machine.id === item.id ? { ...machine, active: !machine.active } : machine);
-        setChanges(activeChanges)
+        console.log(item)
+        const index = valueChanges.findIndex(change => change.id === item.id);
+    
+        // Проверяем, есть ли предыдущая и следующая смены
+        const prevChange = valueChanges[index - 1];
+        const nextChange = valueChanges[index + 1];
+    
+        // Проверяем, является ли выбранная смена единственной активной
+        const is2ActiveChange = valueChanges.filter(change => change.active).length === 2;
+        const activeChanges = valueChanges.filter(change => change.active);
+        const isOneActiveChange = valueChanges.filter(change => change.active).length === 1;
+        
+        const isFirstChange = index === 0;
+    
+        const hasOverlap = valueChanges.some(change => 
+            change.id !== item.id && // исключаем текущую смену из проверки
+            change.active && // только активные смены
+            (
+                (item.startTime >= change.startTime && item.startTime <= change.finishTime) || 
+                (item.finishTime >= change.startTime && item.finishTime <= change.finishTime)
+            )
+        );
+    
+        const allChangesActive = valueChanges.every(change => change.active);
+    
+        if ( allChangesActive && item.change !=="2 смена") {
+            const updatedChanges = valueChanges.map(machine => 
+                machine.id === item.id ? { ...machine, active: !machine.active } : machine
+            );
+            setValueChanges(updatedChanges);
+            setChanges(updatedChanges);
+        } else if (isFirstChange && hasOverlap) {
+            // Если выбранная смена первая в массиве и имеет пересечение с другой активной сменой,
+            // то разрешаем изменять ее состояние, но не меняем состояние других смен
+            const updatedChanges = valueChanges.map(machine => 
+                machine.id === item.id ? { ...machine, active: !machine.active } : machine
+            );
+            setValueChanges(updatedChanges);
+            setChanges(updatedChanges);
+        } else if (prevChange && nextChange && prevChange.active && nextChange.active && item.change !== "2 смена") {
+            // Если предыдущая и следующая смены активны, то разрешаем изменять состояние выбранной смены
+            const updatedChanges = valueChanges.map(machine => 
+                machine.id === item.id ? { ...machine, active: !machine.active } : machine
+            );
+            setValueChanges(updatedChanges);
+            setChanges(updatedChanges);
+        }else if(is2ActiveChange){
+            const updatedChanges = valueChanges.map(machine => 
+                machine.id === item.id ? { ...machine, active: !machine.active } : machine
+            );
+            setValueChanges(updatedChanges);
+            setChanges(updatedChanges);
+        }else if(isOneActiveChange && item.active === false && (activeChanges.change === "2 смена" || item.change === "2 смена") ){
+            const updatedChanges = valueChanges.map(machine => 
+                machine.id === item.id ? { ...machine, active: !machine.active } : machine
+            );
+            setValueChanges(updatedChanges);
+            setChanges(updatedChanges);
+        }
     };
    const getItemColorsOnClick = (item) =>{
 

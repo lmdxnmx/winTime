@@ -1,8 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Line } from '@consta/charts/Line';
+import { Line } from 'react-chartjs-2';
 import axios from 'axios';
+import {
+  Chart as ChartJS,
+  LineElement,
+  PointElement,
+  LinearScale,
+  Title,
+  Tooltip,
+  Legend,
+  CategoryScale, TimeScale
+} from 'chart.js';
+ChartJS.register(LineElement, PointElement, LinearScale, Title, Tooltip, Legend, CategoryScale, TimeScale);
 
-export const LineChart = ({ categoriesColor, dateValue, dataTableIsLoading, changes }) => {
+const LineChart = ({ categoriesColor, dateValue, dataTableIsLoading, changes }) => {
   const [data, setData] = useState([]);
   const [isDataReady, setIsDataReady] = useState(false);
 
@@ -47,13 +58,25 @@ export const LineChart = ({ categoriesColor, dateValue, dataTableIsLoading, chan
           };
 
           const generateTimesForChange = (change) => {
+            const generateHalfHourIntervals = (startHour, endHour) => {
+              const times = [];
+              for (let hour = startHour; hour <= endHour; hour++) {
+                times.push(`${String(hour).padStart(2, '0')}:00`);
+                times.push(`${String(hour).padStart(2, '0')}:30`);
+              }
+              return times;
+            };
+
             let times = [];
             if (change.id === 1) {
-              times = ['00:00:00', '04:00:00', '08:00:00'];
+              times = generateHalfHourIntervals(0, 7);
+              times.push('08:00');
             } else if (change.id === 2) {
-              times = ['08:00:00', '12:00:00', '16:00:00'];
+              times = generateHalfHourIntervals(8, 15);
+              times.push('16:00');
             } else if (change.id === 3) {
-              times = ['16:00:00', '20:00:00', '23:59:59'];
+              times = generateHalfHourIntervals(16, 23);
+              times.push('23:59');
             }
             return times;
           };
@@ -72,7 +95,6 @@ export const LineChart = ({ categoriesColor, dateValue, dataTableIsLoading, chan
               });
             });
 
-            // Удаление дубликатов временных меток
             const uniqueTimestamps = [...new Set(Object.keys(combinedData))].sort();
             const filteredData = {};
             uniqueTimestamps.forEach((timestamp) => {
@@ -124,57 +146,73 @@ export const LineChart = ({ categoriesColor, dateValue, dataTableIsLoading, chan
 
   const colorMap = categoriesToTypeColors(categoriesColor);
 
+  const chartData = {
+    labels: [...new Set(data.map(item => item.Date))],
+    datasets: categoriesColor.map(category => ({
+      label: category.label,
+      data: data
+        .filter(item => item.type === category.label)
+        .map(item => item.scales),
+      borderColor: category.color,
+      fill: false
+    }))
+  };
+
+  const options = {
+    maintainAspectRatio: false,
+    scales: {
+      x: {
+        time: {
+          unit: 'minute',
+          stepSize: 30,
+          displayFormats: {
+            minute: 'HH:mm'
+          }
+        },
+        ticks: {
+          maxRotation: 0,
+          autoSkip: true,
+          maxTicksLimit: 20
+        }
+      },
+      y: {
+        display: true,
+        title: {
+          display: false,
+          text: 'Value'
+        }
+      }
+    },
+    plugins: {
+      legend: {
+        display: false
+      },
+      tooltip: {
+        callbacks: {
+          label: function (context) {
+            return `${context.dataset.label}: ${context.raw}`;
+          },
+          labelColor: function (context) {
+            return {
+              backgroundColor: colorMap[context.dataset.label], // используйте цвет для кружочка
+              borderRadius:5
+            };
+          }
+        }
+      }
+    }
+  };
+  
+
   return (
     <>
       {isDataReady && data.length > 0 && dataTableIsLoading === true && (
-        <Line
-          renderer='svg'
-          legend={false}
-          style={{ height: "76%", width: "100%", marginTop: 10, }}
-          data={data}
-          xField="Date"
-          yField="scales"
-          seriesField="type"
-          lineStyle={({ type }) => ({
-            stroke: colorMap[type],
-          })}
-          options={{
-            maintainAspectRatio: false,
-            scales: {
-              x: {
-                display: true,
-                title: {
-                  display: true,
-                  text: 'Date'
-                }
-              },
-              y: {
-                display: true,
-                title: {
-                  display: true,
-                  text: 'Value'
-                }
-              }
-            }
-          }}
-          tooltip={{
-            customContent: (title, items) => {
-              return (
-                `<div style="padding: 10px; display: flex; flex-direction: column;">
-                  <div style="margin-bottom: 4px;"><strong>${title}</strong></div>
-                  ${items.map(item => `
-                    <div style="display: flex; align-items: center; width:200px; justify-content:space-between">
-                      <div style="background-color: ${colorMap[item.name]}; width: 10px; height: 10px; border-radius: 50%; margin-right: 8px;"></div>
-                      <div style="flex: 1;">${item.name}</div>
-                      <div style="margin-left:10px">${item.value}</div>
-                    </div>
-                  `).join('')}
-                </div>`
-              );
-            },
-          }}
-        />
+        <div style={{ height: "76%", width: "100%", marginTop: 10 }}>
+          <Line data={chartData} options={options} />
+        </div>
       )}
     </>
   );
 };
+
+export default LineChart;

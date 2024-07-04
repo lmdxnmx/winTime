@@ -4,7 +4,7 @@ import DropDownMenu from '../DropDownMenu/DropDownMenu';
 import { DatePicker } from '@consta/uikit/DatePicker';
   import { Table } from '@consta/uikit/Table';
   import ColumnChart from '../Charts/ColumnChart';
-import { DonutChart } from './../Charts/DonutChart';
+import { DonutChartOnline } from './../Charts/DonutChartOnline';
 import ColumnChart2 from '../Charts/ColumnChart2';
 import Bullet from '../Charts/Bullet';
 import ProgressBar from '../ProgressBar/ProgressBar';
@@ -273,13 +273,13 @@ const ReportsPage = () => {
       {typeVal[1].active &&<><div className='columnContainer' style={{display:'flex'}}>
         <div style={{display:'flex',flexDirection:'column',width:'33%',height:"250px",margin:"auto 0"}}>
           <span style={{color:"#323E48",fontSize:14, fontWeight:600,paddingBottom:8}}>Все операции</span>
-          <DonutChart/></div>
+          <DonutChartOnline/></div>
           <div style={{display:'flex',flexDirection:'column',width:'33%',height:"250px",margin:"auto 0"}}>
           <span style={{color:"#323E48",fontSize:14, fontWeight:600,paddingBottom:8}}>Завершенные</span>
-          <DonutChart/></div>
+          <DonutChartOnline/></div>
           <div style={{display:'flex',flexDirection:'column',width:'33%',height:"250px",margin:"auto 0"}}>
           <span style={{color:"#323E48",fontSize:14, fontWeight:600,paddingBottom:8}}>Незавершенные</span>
-          <DonutChart/></div>
+          <DonutChartOnline/></div>
       </div>
       </>}
       {typeVal[2].active && <div>

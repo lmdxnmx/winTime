@@ -1,7 +1,6 @@
 .itemContainer{
     padding:8px 16px 0 16px;
     box-shadow: 0px 2px 8px 0px #00203329;
-    border: 2px solid #32CD32;
     border-radius: 8px;
     display: flex;
     flex-direction: column;

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { TableConsta } from './../Table/TableConsta';
-import { DonutChart } from './../Charts/DonutChart';
-import { LineChart } from './../Charts/LineChart';
+import { DonutChartMain } from '../Charts/DonutChartMain';
+import LineChart from './../Charts/LineChart';
 import "./Pages.css";
 import CategoryChoose from './../CategoryChoose/CategoryChoose';
 import axios from 'axios';
@@ -13,12 +13,12 @@ const MainPage = () => {
   const [changes, setChanges] = useState([{
     change:"1 смена",
     startTime: "00:00:00",
-    finishTime:"00:08:00",
+    finishTime:"08:00:00",
     id:1,
     active:true
   },{
     change:"2 смена",
-    startTime: "00:08:00",
+    startTime: "08:00:00",
     finishTime:"16:00:00",
     id:2,
     active:true
@@ -35,6 +35,7 @@ const MainPage = () => {
     axios.get('http://192.168.1.109:8000/machines')
       .then(response => {
         setMachines(response?.data?.machines);
+        console.log(response?.data.machines)
       })
       .catch(error => {
         console.error('Ошибка при получении машин:', error);
@@ -80,13 +81,13 @@ const MainPage = () => {
 
 
   return (
-    <>
+    <div style={{borderRight:'0.5px solid #F3F3F3'}}>
       <h1 className="title">Общая статистика</h1>
       <div className="chartContainer">
         <div className="donutContainer">
           <h3 style={{ fontSize: 11 }}>Загрузка всех станков</h3>
           {!isLoading && (
-            <DonutChart setChanges={setChanges} changes={changes} dataTableIsLoading={dataTableIsLoading} dateValue={dateValue} categoriesColor={categoriesColor} />
+            <DonutChartMain setChanges={setChanges} changes={changes} dataTableIsLoading={dataTableIsLoading} dateValue={dateValue} categoriesColor={categoriesColor} />
           )}
         </div>
         <div className="lineContainer">
@@ -97,7 +98,7 @@ const MainPage = () => {
         </div>
       </div>
       {!isLoading && (<TableConsta setDataTableIsLoading={setDataTableIsLoading} machines={machines} />)}
-    </>
+    </div>
   );
 };
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import './App.css';
 import Header from './Header/Header';
 import SideBar from './SideBar/SideBar';
@@ -12,7 +12,21 @@ import OnlineItemPage from './Pages/OnlineItemPage';
 import ReportsPage from './Pages/ReportsPage';
 import QuestionAnswer from './Pages/QuestionAnswer';
 import { MixPlotExample } from './Charts/Mix';
+import axios from "axios";
 function App() {
+  const fetchData = async()=>{
+
+    const response  = await  axios.get(`http://192.168.1.109:8000/machine/termodat3/all-states`, {
+      headers: {
+        'access-control-allow-origin': '*',
+        'access-control-allow-credentials': 'true',
+      }
+    })
+    localStorage.setItem("colors",JSON.stringify(response.data.states))
+  } 
+  useEffect(()=>{
+    fetchData();
+  },[])
   return (
     <Theme preset={presetGpnDefault}>
       <Routes>
