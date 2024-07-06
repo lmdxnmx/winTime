@@ -37,7 +37,7 @@ const OnlineDonutItem = ({fullSize, machineName, worker, state}) => {
     }
     const fetchPie = async(slug)=>{
         const response = await axios.post(`http://192.168.1.109:8000/machines/pie-view/`, {
-            "machines": ["all"],
+            "machines": [machineName.toLowerCase().replace(" ", "")],
             "states": slug,
             "from": `${currentDate}T00:00`,
             "to": `${currentDate}T23:59`
@@ -53,7 +53,7 @@ const OnlineDonutItem = ({fullSize, machineName, worker, state}) => {
     useEffect(()=>{
       if(slugs.length> 0){
         const slug = slugs.map(category => category.slug);
-        fetchPie(slug)
+       fetchPie(slug)
       }
     },[slugs])
     useEffect(()=>{
