@@ -40,7 +40,7 @@ export const DonutChartMain = ({ categoriesColor, dateValue, dataTableIsLoading,
 
           if (activeChanges.length === changes.length) {
             // Все смены активны, делаем один запрос на весь день
-            const response = await axios.post(`http://192.168.1.109:8000/machines/pie-view/`, {
+            const response = await axios.post(`${process.env.REACT_APP_QUERY_MAIN}machines/pie-view/`, {
               "machines": ["all"],
               "states": slugs,
               "from": `${currentDate}T00:00`,
@@ -63,7 +63,7 @@ export const DonutChartMain = ({ categoriesColor, dateValue, dataTableIsLoading,
               requests = activeChanges.map(change => {
                 const fromTime = `${currentDate}T${change.startTime}`;
                 const toTime = `${currentDate}T${change.finishTime}`;
-                return axios.post(`http://192.168.1.109:8000/machines/pie-view/`, {
+                return axios.post(`${process.env.REACT_APP_QUERY_MAIN}machines/pie-view/`, {
                   "machines": ["all"],
                   "states": slugs,
                   "from": fromTime,
@@ -80,7 +80,7 @@ export const DonutChartMain = ({ categoriesColor, dateValue, dataTableIsLoading,
               const fromTime = `${currentDate}T${activeChanges[0].startTime}`;
               const toTime = `${currentDate}T${activeChanges[activeChanges.length - 1].finishTime}`;
               requests = [
-                axios.post(`http://192.168.1.109:8000/machines/pie-view/`, {
+                axios.post(`${process.env.REACT_APP_QUERY_MAIN}machines/pie-view/`, {
                   "machines": ["all"],
                   "states": slugs,
                   "from": fromTime,

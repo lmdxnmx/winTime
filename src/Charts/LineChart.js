@@ -44,7 +44,7 @@ const LineChart = ({ categoriesColor, dateValue, dataTableIsLoading, changes }) 
 
           const fetchDataForChange = async (change) => {
             const intervalTimes = generateTimesForChange(change);
-            const response = await axios.post(`http://192.168.1.109:8000/machines/horizontal-view`, {
+            const response = await axios.post(`${process.env.REACT_APP_QUERY_MAIN}machines/horizontal-view`, {
               "machines": ["all"],
               "states": slugs,
               "times": intervalTimes.map(time => `${currentDate}T${time}`)

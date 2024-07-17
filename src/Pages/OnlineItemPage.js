@@ -17,7 +17,7 @@ const OnlineItemPage = () => {
   const {state} = useLocation()
   const [machine, setMachines] = useState(null);
   const fetchData = async()=>{
-    const response  = await  axios.post(`http://192.168.1.109:8000/machines/online`, {
+    const response  = await  axios.post(`${process.env.REACT_APP_QUERY_MAIN}machines/online`, {
       "machines": [`${params.id.toLowerCase()}`],
     }, {
       headers: {
@@ -69,7 +69,7 @@ const OnlineItemPage = () => {
   { name: "День", active: false, size: 16 }, { name: "Вызов", active: false, size: 16 }])
 
   useEffect(() => {
-    axios.get(`http://192.168.1.109:8000/machine/${params.id.toLowerCase()}/signals/`)
+    axios.get(`${process.env.REACT_APP_QUERY_MAIN}machine/${params.id.toLowerCase()}/signals/`)
       .then(response => {
         setSignals(response?.data?.signals?.Сигналы);
         console.log(response?.data)

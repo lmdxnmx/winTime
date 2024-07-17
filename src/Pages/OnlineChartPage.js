@@ -6,7 +6,7 @@ const OnlineChartPage = () => {
   const [machines, setMachines] = useState([]);
 
   const fetchData = async()=>{
-    const response  = await  axios.post(`http://192.168.1.109:8000/machines/online`, {
+    const response  = await  axios.post(`${process.env.REACT_APP_QUERY_MAIN}machines/online`, {
       "machines": ["all"],
     }, {
       headers: {

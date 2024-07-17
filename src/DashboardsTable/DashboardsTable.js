@@ -27,7 +27,7 @@ const DashboardsTable = ({ name, changeData }) => {
 
   const fetchData = async () => {
     try {
-      const response = await axios.get(`http://192.168.1.109:8000/workers`, {
+      const response = await axios.get(`${process.env.REACT_APP_QUERY_MAIN}workers`, {
         headers: {
           'access-control-allow-origin': '*',
           'access-control-allow-credentials': 'true',
@@ -66,7 +66,7 @@ const DashboardsTable = ({ name, changeData }) => {
     }
     try {
       const response = await axios.get(
-        `http://192.168.1.109:8000/worker/${username}/worktime?from=${newDate}T${newStartTime}&to=${newDate}T${newFinishTime}`,
+        `${process.env.REACT_APP_QUERY_MAIN}worker/${username}/worktime?from=${newDate}T${newStartTime}&to=${newDate}T${newFinishTime}`,
         {
           headers: {
             'access-control-allow-origin': '*',

@@ -31,8 +31,9 @@ const MainPage = () => {
   }])
   const [isLoading, setIsLoading] = useState(true);
   const [dataTableIsLoading, setDataTableIsLoading] = useState(false)
+  {console.log(process.env.QUERY_MAIN)}
   useEffect(() => {
-    axios.get('http://192.168.1.109:8000/machines')
+    axios.get(`${process.env.REACT_APP_QUERY_MAIN}machines`)
       .then(response => {
         setMachines(response?.data?.machines);
         console.log(response?.data.machines)
@@ -47,7 +48,7 @@ const MainPage = () => {
       Promise.all(
         machines.map(async mach => {
           try {
-            const response = await axios.get(`http://192.168.1.109:8000/machine/${mach.slug}/all-states`);
+            const response = await axios.get(`${process.env.REACT_APP_QUERY_MAIN}machine/${mach.slug}/all-states`);
             const newStates = response.data.states;
             return newStates.map(newState => ({
               label: newState.name,

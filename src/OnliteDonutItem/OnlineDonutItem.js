@@ -20,7 +20,7 @@ const OnlineDonutItem = ({fullSize, machineName, worker, state}) => {
     let currentDate = `${year}-${month}-${day}`;
     const fetchData = async()=>{
         try {
-            const response = await axios.get(`http://192.168.1.109:8000/machine/${machineName.toLowerCase().replace(" ", "")}/all-states`);
+            const response = await axios.get(`${process.env.REACT_APP_QUERY_MAIN}machine/${machineName.toLowerCase().replace(" ", "")}/all-states`);
             const newStates = response.data.states;
             setSlugs(newStates.map(newState => ({
               label: newState.name,
@@ -36,7 +36,7 @@ const OnlineDonutItem = ({fullSize, machineName, worker, state}) => {
           }
     }
     const fetchPie = async(slug)=>{
-        const response = await axios.post(`http://192.168.1.109:8000/machines/pie-view/`, {
+        const response = await axios.post(`${process.env.REACT_APP_QUERY_MAIN}machines/pie-view/`, {
             "machines": [machineName.toLowerCase().replace(" ", "")],
             "states": slug,
             "from": `${currentDate}T00:00`,

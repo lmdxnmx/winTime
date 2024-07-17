@@ -61,7 +61,7 @@ export const TableConsta = ({ machines, setDataTableIsLoading }) => {
       const fetchData = async () => {
         try {
           const requests = machines.map(async mach => {
-            const response = await axios.get(`http://192.168.1.109:8000/machine/${mach.slug}/states?from=${currentDate}T00:00&to=${currentDate}T23:59&percent=true`);
+            const response = await axios.get(`${process.env.REACT_APP_QUERY_MAIN}machine/${mach.slug}/states?from=${currentDate}T00:00&to=${currentDate}T23:59&percent=true`);
             return { machine: mach.slug, states: response.data.states, percents: response.data.percents };
           });
 
@@ -147,7 +147,7 @@ export const TableConsta = ({ machines, setDataTableIsLoading }) => {
     try {
       const requests = machines.map(async mach => {
         setMachineTimeWork([]);
-        const response = await axios.get(`http://192.168.1.109:8000/machine/${mach.slug}/states?from=${newDate}T${newStartTime}&to=${newDate}T${newFinishTime}&percent=true`);
+        const response = await axios.get(`${process.env.REACT_APP_QUERY_MAIN}machine/${mach.slug}/states?from=${newDate}T${newStartTime}&to=${newDate}T${newFinishTime}&percent=true`);
         return { machine: mach.slug, states: response.data.states, percents: response.data.percents };
       });
 
@@ -322,12 +322,12 @@ export const TableConsta = ({ machines, setDataTableIsLoading }) => {
           const startTime = `${String(hour).padStart(2, '0')}:00`;
           const endTime = `${String(hour + 1).padStart(2, '0')}:00`;
           requests.push(
-            axios.get(`http://192.168.1.109:8000/machine/${selectedMachine}/states?from=${currentDate}T${startTime}&to=${currentDate}T${endTime}&percent=true`)
+            axios.get(`${process.env.REACT_APP_QUERY_MAIN}machine/${selectedMachine}/states?from=${currentDate}T${startTime}&to=${currentDate}T${endTime}&percent=true`)
           );
         }
         // Последний запрос от 23:00 до 23:59
         requests.push(
-          axios.get(`http://192.168.1.109:8000/machine/${selectedMachine}/states?from=${currentDate}T23:00&to=${currentDate}T23:59&percent=true`)
+          axios.get(`${process.env.REACT_APP_QUERY_MAIN}machine/${selectedMachine}/states?from=${currentDate}T23:00&to=${currentDate}T23:59&percent=true`)
         );
         try {
           const responses = await Promise.all(requests);

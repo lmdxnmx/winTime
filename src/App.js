@@ -16,7 +16,7 @@ import axios from "axios";
 function App() {
   const fetchData = async()=>{
 
-    const response  = await  axios.get(`http://192.168.1.109:8000/machine/termodat3/all-states`, {
+    const response  = await  axios.get(`${process.env.REACT_APP_QUERY_MAIN}machine/termodat3/all-states`, {
       headers: {
         'access-control-allow-origin': '*',
         'access-control-allow-credentials': 'true',
