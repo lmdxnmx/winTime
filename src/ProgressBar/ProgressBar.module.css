@@ -67,3 +67,27 @@
     border-right: 5px solid transparent;
     border-top: 5px solid #22272B; /* Same color as tooltip background */
   }
+  .container {
+    position: relative;
+    width: 100%;
+  }
+  
+  .ticksContainer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 106%;
+    height: 100%;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .tick {
+    z-index: 9999;
+    position: absolute;
+    height: 100%;
+    border-left: 2.5px solid #808080; /* Adjust the color as needed */
+    pointer-events: none;
+  }

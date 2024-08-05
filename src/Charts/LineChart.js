@@ -54,6 +54,7 @@ const LineChart = ({ categoriesColor, dateValue, dataTableIsLoading, changes }) 
                 'access-control-allow-credentials': 'true',
               }
             });
+            console.log(response)
             return response.data.times;
           };
 

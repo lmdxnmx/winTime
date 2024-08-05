@@ -10,8 +10,11 @@ import Bullet from '../Charts/Bullet';
 import ProgressBar from '../ProgressBar/ProgressBar';
 import { Modal } from '@consta/uikit/Modal';
 import ss from "./../TableItem/TableItem.module.css"
+import ProgressBarTags from '../ProgressBar/PrograssBarTags';
+import axios from 'axios';
+import { ReportTableStates } from '../Report/ReportTableStates';
 const ReportsPage = () => {
-  const [typeVal, setTypeVal] = useState([{ name: "Отчет по загрузке", active: true, size: 16 }, { name: "Выполненные операции", active: false, size: 16 }, { name: "Анализ тегов", active: false, size: 16 },{ name: "Учет инструментов", active: false, size: 16 }])
+  const [typeVal, setTypeVal] = useState([{ name: "Отчет по загрузке", active: false, size: 16 }, { name: "Выполненные операции", active: false, size: 16 }, { name: "Анализ тегов", active: true, size: 16 },{ name: "Учет инструментов", active: false, size: 16 }])
   const [dateValue, setDateValue] = useState(null);
   const [timeValue, setTimeValue] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -25,6 +28,7 @@ const ReportsPage = () => {
   const [isOpenMachines, setIsOpenMachines] = useState(false);
   const refDropMachines = useRef(null);
   const refDropChanges = useRef(null);
+  const [machines, setMachines] = useState([]);
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (refDropMachines.current && !refDropMachines.current.contains(event.target)) {
@@ -238,37 +242,45 @@ const ReportsPage = () => {
       width:130
     },
   ];
+  let today = new Date();
+  let year = today.getFullYear();
+  let month = String(today.getMonth() + 1).padStart(2, '0');
+  let day = String(today.getDate()).padStart(2, '0');
+  let currentDate = `${year}-${month}-${day}`;
+  
+  const fetchDataForChange = async (change) => {
+
+
+  };
+  useEffect(()=>{
+    if(typeVal[2].active === true){
+      fetchDataForChange()
+    }
+  },[typeVal])
+  useEffect(() => {
+    axios.get(`${process.env.REACT_APP_QUERY_MAIN}machines`)
+      .then(response => {
+        setMachines(response?.data?.machines);
+        console.log(response?.data.machines)
+      })
+      .catch(error => {
+        console.error('Ошибка при получении машин:', error);
+      });
+  }, []);
   return (
     <div>
       <h1 className='title'>Отчеты</h1>
       <div style={{width:"35%"}}>
         <SwitchButtons val={typeVal} setVal={setTypeVal} />
       </div>
-      <div className="filters" style={{marginBottom:10}}>
-        <div className='filterWrapper'>
-          <span>Оборудование</span>
-          <DropDownMenu width={352} refs={refDropMachines} label={"Все станки"} isOpen={isOpenMachines} setIsOpen={setIsOpenMachines} />
-        </div>
-        <div className='filterWrapper'>
-          <span>Смена</span>
-          <DatePicker className="datePicker" size="s" placeholder="Сегодня" dropdownOpen={isOpen} type="date" value={dateValue} onChange={setDateValue} />
-        </div>
-        <div className='filterWrapper'>
-          <span>Дата</span>
-          <DropDownMenu width={123} label={"Все смены"} refs={refDropChanges} isOpen={isOpenChanges} setIsOpen={setIsOpenChanges} />
-        </div>
-        <div className='filterWrapper'>
-          <span>Время</span>
-          <DatePicker className="datePicker" size="s" placeholder="Сегодня" dropdownOpen={isOpen} type="time" value={timeValue} onChange={setTimeValue} />
-        </div>
-      </div>
+
       {typeVal[0].active &&<><div className='columnContainer'>
         <h1 className='title' style={{marginBottom:32}}>Группа 1</h1>
-        <ColumnChart/>
+        <ColumnChart changeData={null} type={"lathe"}/>
       </div>
       <div className='columnContainer'>
-        <h1 className='title' style={{marginBottom:32}}>Группа 1</h1>
-        <ColumnChart/>
+        <h1 className='title' style={{marginBottom:32}}>Группа 2</h1>
+        <ColumnChart changeData={null} type={"milling"}/>
       </div></>}
       {typeVal[1].active &&<><div className='columnContainer' style={{display:'flex'}}>
         <div style={{display:'flex',flexDirection:'column',width:'33%',height:"250px",margin:"auto 0"}}>
@@ -312,7 +324,9 @@ const ReportsPage = () => {
           </div>
           </div>
         </div></Modal>
-        <div onClick={()=>setOpenModal(true)}><Bullet/></div></div>}
+        <div onClick={()=>setOpenModal(true)}>
+          <ReportTableStates machines={machines} />
+          </div></div>}
       {typeVal[3].active && <div className='columnContainer'>
         <ColumnChart2/>
       </div>}
