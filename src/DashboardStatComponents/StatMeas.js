@@ -1,7 +1,30 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import VerticalProgressBar from '../CommonComponents/VerticalProgressBar'
 import "./Stats.css"
+import axios from 'axios'
 const StatMeas = () => {
+  const today = new Date()
+  const year = today.getFullYear()
+  const dayQeary = String(today.getDate()).padStart(2, '0')
+  const monthQearu = String(today.getMonth() + 1).padStart(2, '0')
+  let currentDate = `${year}-${monthQearu}-${dayQeary}`
+
+  const fetchData = async () => {
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_QUERY_MAIN}machines/worktime?from=2023-01-01T00:00&to2025-01-01T00:00:00&type=lathe`, {
+        headers: {
+          'access-control-allow-origin': '*',
+          'access-control-allow-credentials': 'true',
+        }
+      })
+     console.log(response.data)
+    } catch (error) {
+      console.error(error)
+    }
+  }
+  useEffect(()=>{},[
+    fetchData()
+  ])
   return (
     <div className='statMesContainer'>
       <div style={{textAlign:"left"}} className='changesContainer'>

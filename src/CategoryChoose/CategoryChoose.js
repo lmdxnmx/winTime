@@ -3,7 +3,6 @@ import s from "./CategoryChoose.module.css"
 import DropDownMenu from '../DropDownMenu/DropDownMenu';
 import x from "./../images/X.svg"
 import { DatePicker } from '@consta/uikit/DatePicker';
-import Calendar from "./../images/Calendar.svg"
 
 const CategoryChoose = ({ value, setValue, dateValue, setDateValue, changes, setChanges }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -12,6 +11,19 @@ const CategoryChoose = ({ value, setValue, dateValue, setDateValue, changes, set
     const [colorsOpen, setColorsOpen] = useState(false)
     const [isOpenChanges, setIsOpenChanges] = useState(false);
     const refDropChanges = useRef(null);
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+          if (refDropChanges.current && !refDropChanges.current.contains(event.target)) {
+            setIsOpenChanges(false);
+          }
+        };
+    
+        document.addEventListener("click", handleClickOutside);
+    
+        return () => {
+          document.removeEventListener("click", handleClickOutside);
+        };
+      }, []);
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (colorRef.current && !colorRef.current.contains(event.target)) {
@@ -28,6 +40,7 @@ const CategoryChoose = ({ value, setValue, dateValue, setDateValue, changes, set
     useEffect(() => {
         if (colorsOpen === false) {
             setValue(copyColors)
+            console.log("44")
         }
     }, [colorsOpen])
     const handleRemoveItem = (index) => {
@@ -42,21 +55,8 @@ const CategoryChoose = ({ value, setValue, dateValue, setDateValue, changes, set
         }
     };
     useEffect(() => {
-        setCopyColors(value)
+        setCopyColor(value)
     }, [value])
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (refDropChanges.current && !refDropChanges.current.contains(event.target)) {
-                setIsOpenChanges(false);
-            }
-        };
-
-        document.addEventListener("click", handleClickOutside);
-
-        return () => {
-            document.removeEventListener("click", handleClickOutside);
-        };
-    }, []);
     return (
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', flexWrap: 'wrap' }}>
@@ -73,13 +73,10 @@ const CategoryChoose = ({ value, setValue, dateValue, setDateValue, changes, set
                     )
                 })}
             </div>
-            <div style={{ display: 'flex' }}>
-                <DropDownMenu width={120} label={"Все смены"} refs={refDropChanges} isOpen={isOpenChanges} setIsOpen={setIsOpenChanges} setChanges={setChanges} />
-                <div style={{ position: "relative" }}>
-                    <DatePicker style={{ width: 100, marginRight: 10 }} className={s.datePicker} size="s" placeholder="Сегодня" dropdownOpen={isOpen} type="date" value={dateValue} onChange={setDateValue} />
-                    <img style={{ position: "absolute", top: '37.5%', right: "22%" }} src={Calendar} width={10} height={10} />
-                </div>
-            </div>
+            <div style={{display:'flex'}}>
+            <DropDownMenu width={123} label={"Все смены"} refs={refDropChanges} isOpen={isOpenChanges} setIsOpen={setIsOpenChanges} changes={changes} setChanges={setChanges} />
+            <DatePicker style={{ width: 100 }} className={s.datePicker} size="s" placeholder="Сегодня" dropdownOpen={isOpen} type="date" value={dateValue} onChange={setDateValue} />
+        </div>
         </div>
     )
 }

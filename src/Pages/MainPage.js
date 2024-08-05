@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { TableConsta } from './../Table/TableConsta';
-import { DonutChart } from './../Charts/DonutChart';
-import { LineChart } from './../Charts/LineChart';
+import { DonutChartMain } from '../Charts/DonutChartMain';
+import LineChart from './../Charts/LineChart';
 import "./Pages.css";
 import CategoryChoose from './../CategoryChoose/CategoryChoose';
 import axios from 'axios';
@@ -10,18 +10,33 @@ const MainPage = () => {
   const [categoriesColor, setCategoriesColors] = useState([]);
   const [machines, setMachines] = useState([]);
   const [dateValue, setDateValue] = useState(null);
-  const [changes,setChanges] = useState([{
-    "00:00": "07:59",id:1},
-    {"08:00": "16:59",id:2},
-    {"17:00": "23:59",id:3}
-  ])
+  const [changes, setChanges] = useState([{
+    change:"1 смена",
+    startTime: "00:00:00",
+    finishTime:"08:00:00",
+    id:1,
+    active:true
+  },{
+    change:"2 смена",
+    startTime: "08:00:00",
+    finishTime:"16:00:00",
+    id:2,
+    active:true
+  },{
+    change:"3 смена",
+    startTime: "16:00:00",
+    finishTime:"23:59:59",
+    id:3,
+    active:true
+  }])
   const [isLoading, setIsLoading] = useState(true);
-  const [machineTimeWork, setMachineTimeWork] = useState([]);
-
+  const [dataTableIsLoading, setDataTableIsLoading] = useState(false)
+  {console.log(process.env.QUERY_MAIN)}
   useEffect(() => {
-    axios.get('http://192.168.1.109:8000/machines')
+    axios.get(`${process.env.REACT_APP_QUERY_MAIN}machines`)
       .then(response => {
         setMachines(response?.data?.machines);
+        console.log(response?.data.machines)
       })
       .catch(error => {
         console.error('Ошибка при получении машин:', error);
@@ -30,70 +45,61 @@ const MainPage = () => {
 
   useEffect(() => {
     if (machines.length > 0) {
-      (async () => {
-        for (const mach of machines) {
+      Promise.all(
+        machines.map(async mach => {
           try {
-            const response = await axios.get(`http://192.168.1.109:8000/machine/${mach.slug}/all-states`);
+            const response = await axios.get(`${process.env.REACT_APP_QUERY_MAIN}machine/${mach.slug}/all-states`);
             const newStates = response.data.states;
-            setCategoriesColors(prevState => {
-              const updatedState = [...prevState];
-              if (newStates.length > 0) {
-                newStates.forEach(newState => {
-                  if (!updatedState.some(item => item.label === newState.name)) {
-                    updatedState.push({ label: newState.name, color: newState.color, active: true, id: newState.id, slug: newState.slug });
-                  }
-                });
-              }
-              return updatedState;
-            });
+            return newStates.map(newState => ({
+              label: newState.name,
+              color: newState.color,
+              active: true,
+              id: newState.id,
+              slug: newState.slug
+            }));
           } catch (error) {
             console.error(error);
+            return [];
           }
-
-          try {
-            const response = await axios.get(`http://192.168.1.109:8000/machine/${mach.slug}/states/?from=2024-05-20T00:00&to=2024-05-20T23:59`);
-            const newStates = response.data.states;
-            setMachineTimeWork(prevState => {
-              const updatedState = Array.isArray(prevState) ? [...prevState] : [];
-              if (newStates.length > 0) {
-                newStates.forEach(newState => {
-                  updatedState.push({ time: Object.keys(newState), value: Object.values(newState), machine: mach.slug });
-                });
-              }
-              return updatedState;
-            });
-          } catch (error) {
-            console.error(error);
-          }
-        }
-        setIsLoading(false);
-      })();
+        })
+      ).then(statesArray => {
+        const combinedStates = statesArray.flat(); // Combine states from all responses
+        setCategoriesColors(prevState => {
+          const updatedState = [...prevState];
+          combinedStates.forEach(newState => {
+            if (!updatedState.some(item => item.label === newState.label)) {
+              updatedState.push(newState);
+            }
+          });
+          return updatedState;
+        });
+      
+      }).then(()=> {
+        setIsLoading(false)});
     }
   }, [machines]);
+  
 
-  useEffect(() => {
-    console.log(machineTimeWork);
-  }, [machineTimeWork]);
 
   return (
-    <>
+    <div style={{borderRight:'0.5px solid #F3F3F3'}}>
       <h1 className="title">Общая статистика</h1>
       <div className="chartContainer">
         <div className="donutContainer">
           <h3 style={{ fontSize: 11 }}>Загрузка всех станков</h3>
           {!isLoading && (
-            <DonutChart dateValue={dateValue} categoriesColor={categoriesColor} />
+            <DonutChartMain setChanges={setChanges} changes={changes} dataTableIsLoading={dataTableIsLoading} dateValue={dateValue} categoriesColor={categoriesColor} />
           )}
         </div>
         <div className="lineContainer">
-          <CategoryChoose setChanges={setChanges} changes={changes} dateValue={dateValue} setDateValue={setDateValue} value={categoriesColor} setValue={setCategoriesColors} />
+          {!isLoading &&<CategoryChoose setChanges={setChanges} changes={changes} dateValue={dateValue} setDateValue={setDateValue} value={categoriesColor} setValue={setCategoriesColors} />}
           {!isLoading && (
-            <LineChart dateValue={dateValue} categoriesColor={categoriesColor} />
+            <LineChart setChanges={setChanges} changes={changes} dataTableIsLoading={dataTableIsLoading} dateValue={dateValue} categoriesColor={categoriesColor} />
           )}
         </div>
       </div>
-      {!isLoading && (<TableConsta machines={machines} />)}
-    </>
+      {!isLoading && (<TableConsta setDataTableIsLoading={setDataTableIsLoading} machines={machines} />)}
+    </div>
   );
 };
 
