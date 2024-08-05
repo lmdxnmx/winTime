@@ -3,7 +3,7 @@ import VerticalProgressBar from '../CommonComponents/VerticalProgressBar';
 import './Stats.css';
 import axios from 'axios';
 
-const StatWork = ({ changeData = null }) => {
+const StatWork = ({ changeData = null, dataOk, setDataOk }) => {
   const today = new Date();
   const year = today.getFullYear();
   const dayQuery = String(today.getDate()).padStart(2, '0');
@@ -27,6 +27,7 @@ const StatWork = ({ changeData = null }) => {
         return { ...user, time: userWorkTime, states: userWorkState, userStateData: [] };
       }));
       setAllStates(updatedUsers);
+      setDataOk(true)
     } catch (error) {
       console.error(error);
     }
@@ -189,6 +190,7 @@ const progressBarData = transformData(!finishData.time)
 
   return (
     <div className='statWorkContainer'>
+      {dataOk === true &&<>
       <div style={{textAlign:"left"}} className='changesContainer'>
         <span className='statMesName'>Статистика работников</span>
       </div>
@@ -221,6 +223,7 @@ const progressBarData = transformData(!finishData.time)
         )
        })}
         </div>
+        </>}
     </div>  )
 }
 

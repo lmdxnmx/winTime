@@ -23,6 +23,7 @@ const DashboardsPage = () => {
   const today = new Date();
   const year = today.getFullYear();
   const month = String(today.getMonth()).padStart(2, '0');
+  const [dataOk, setDataOk] = useState(false)
   const [changes, setChanges] = useState([{
     change:"1 смена",
     startTime: "00:00:00",
@@ -142,7 +143,7 @@ const DashboardsPage = () => {
             {`${timeStart ? timeStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '00:00'} - ${timeFinish ? timeFinish.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '23:59'
               }`}
             <img style={{ position: 'absolute', top: '35%', right: '5%' }} src={Calendar} width={10} height={10} />
-          </div>;
+          </div>
 
           <div className={"dropDown"} style={{ display: timesIsView === true ? "" : "none", }}>
 
@@ -170,8 +171,8 @@ const DashboardsPage = () => {
       </div>}
      {typeVal[1].active &&
      <div className='statWrapper'>
-        <StatMeas/>
-        <StatWork/>
+        <StatMeas dataOk={dataOk} setDataOk={setDataOk}/>
+        <StatWork dataOk={dataOk} setDataOk={setDataOk}/>
      </div>
      }
     </>

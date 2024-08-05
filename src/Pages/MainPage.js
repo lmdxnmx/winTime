@@ -92,7 +92,7 @@ const MainPage = () => {
           )}
         </div>
         <div className="lineContainer">
-          {!isLoading &&<CategoryChoose setChanges={setChanges} changes={changes} dateValue={dateValue} setDateValue={setDateValue} value={categoriesColor} setValue={setCategoriesColors} />}
+          {!isLoading &&<CategoryChoose full={true} setChanges={setChanges} changes={changes} dateValue={dateValue} setDateValue={setDateValue} value={categoriesColor} setValue={setCategoriesColors} />}
           {!isLoading && (
             <LineChart setChanges={setChanges} changes={changes} dataTableIsLoading={dataTableIsLoading} dateValue={dateValue} categoriesColor={categoriesColor} />
           )}

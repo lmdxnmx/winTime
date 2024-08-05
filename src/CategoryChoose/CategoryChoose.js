@@ -4,7 +4,7 @@ import DropDownMenu from '../DropDownMenu/DropDownMenu';
 import x from "./../images/X.svg"
 import { DatePicker } from '@consta/uikit/DatePicker';
 
-const CategoryChoose = ({ value, setValue, dateValue, setDateValue, changes, setChanges }) => {
+const CategoryChoose = ({ value, setValue, dateValue, setDateValue, changes, setChanges,full }) => {
     const [isOpen, setIsOpen] = useState(false);
     const colorRef = useRef();
     const [copyColors, setCopyColors] = useState(value)
@@ -49,13 +49,13 @@ const CategoryChoose = ({ value, setValue, dateValue, setDateValue, changes, set
                 if (i === index) {
                     return { ...item, active: false };
                 }
-                return item;
+                return item
             });
             setValue(updatedCopyColors);
         }
     };
     useEffect(() => {
-        setCopyColor(value)
+        setCopyColors(value)
     }, [value])
     return (
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -73,10 +73,11 @@ const CategoryChoose = ({ value, setValue, dateValue, setDateValue, changes, set
                     )
                 })}
             </div>
+            {full === true &&
             <div style={{display:'flex'}}>
             <DropDownMenu width={123} label={"Все смены"} refs={refDropChanges} isOpen={isOpenChanges} setIsOpen={setIsOpenChanges} changes={changes} setChanges={setChanges} />
             <DatePicker style={{ width: 100 }} className={s.datePicker} size="s" placeholder="Сегодня" dropdownOpen={isOpen} type="date" value={dateValue} onChange={setDateValue} />
-        </div>
+        </div>}
         </div>
     )
 }

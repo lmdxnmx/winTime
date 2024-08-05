@@ -3,10 +3,15 @@ import s from "./dropDownMenu.module.css";
 import { Checkbox } from '@consta/uikit/Checkbox';
 import { IconArrowDown } from "@consta/icons/IconArrowDown"
 import { IconArrowUp } from "@consta/icons/IconArrowUp"
-const DropDownMenu = ({ label, refs, width, isOpen, setIsOpen, value, setValue,machines, setFilteredRows, rows, setChanges }) => {
+const DropDownMenu = ({ label, refs, width, isOpen, setIsOpen, value, setValue,machines, setFilteredRows, rows, changes, setChanges }) => {
     const [valueMachines, setValueMachines] = useState([
         { label: "DOOSAN 2600LY", active: true, id: 1 }, 
         { label: "DOOSAN 2700LY", active: true, id: 2 },
+    ]);
+    const [valueChanges, setValueChanges] = useState([
+        { change: "1 смена", active: true, id: 1 }, 
+        { change: "2 смена", active: true, id: 2 },
+        { change: "3 смена", active: true, id: 3 }
     ]);
     useEffect(() => {
         if (machines?.length > 0) {
@@ -40,7 +45,7 @@ const DropDownMenu = ({ label, refs, width, isOpen, setIsOpen, value, setValue,m
 
     const getItemMachinesOnClick = (item) => {
         setValueMachines(prevValue => prevValue.map(prevItem => prevItem.id === item.id ? { ...prevItem, active: !prevItem.active } : prevItem));
-        const activeMachines = valueMachines.map(machine => machine.id === item.id ? { ...machine, active: !machine.active } : machine);
+        const activeMachines = valueMachines.map(change => change.id === item.id ? { ...change, active: !change.active } : change);
         const filtered = rows.filter(row => activeMachines.find(machine => machine.label === row.name && machine.active));
         setFilteredRows(filtered);
     };
@@ -141,7 +146,7 @@ const DropDownMenu = ({ label, refs, width, isOpen, setIsOpen, value, setValue,m
                     valueChanges.map((item) => (
                         <div key={item.id} onClick={() => getItemChangesOnClick(item)} className={s.dropDownItemChanges}>
                             <Checkbox checked={item.active} className={s.dropDownCheckbox} />
-                            <span>{item.label}</span>
+                            <span>{item.change}</span>
                         </div>
                     ))
                 }

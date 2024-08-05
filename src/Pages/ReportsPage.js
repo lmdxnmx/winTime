@@ -13,8 +13,9 @@ import ss from "./../TableItem/TableItem.module.css"
 import ProgressBarTags from '../ProgressBar/PrograssBarTags';
 import axios from 'axios';
 import { ReportTableStates } from '../Report/ReportTableStates';
+import { ReportTableTags } from '../Report/ReportTableTags';
 const ReportsPage = () => {
-  const [typeVal, setTypeVal] = useState([{ name: "Отчет по загрузке", active: false, size: 16 }, { name: "Выполненные операции", active: false, size: 16 }, { name: "Анализ тегов", active: true, size: 16 },{ name: "Учет инструментов", active: false, size: 16 }])
+  const [typeVal, setTypeVal] = useState([{ name: "Отчет по загрузке", active: true, size: 16 }, { name: "Выполненные операции", active: false, size: 16 }, { name: "Анализ тегов", active: false, size: 16 },{ name: "Учет инструментов", active: false, size: 16 }])
   const [dateValue, setDateValue] = useState(null);
   const [timeValue, setTimeValue] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -282,7 +283,8 @@ const ReportsPage = () => {
         <h1 className='title' style={{marginBottom:32}}>Группа 2</h1>
         <ColumnChart changeData={null} type={"milling"}/>
       </div></>}
-      {typeVal[1].active &&<><div className='columnContainer' style={{display:'flex'}}>
+      {typeVal[1].active &&<>
+      {/* <div className='columnContainer' style={{display:'flex'}}>
         <div style={{display:'flex',flexDirection:'column',width:'33%',height:"250px",margin:"auto 0"}}>
           <span style={{color:"#323E48",fontSize:14, fontWeight:600,paddingBottom:8}}>Все операции</span>
           <DonutChartOnline/></div>
@@ -291,8 +293,10 @@ const ReportsPage = () => {
           <DonutChartOnline/></div>
           <div style={{display:'flex',flexDirection:'column',width:'33%',height:"250px",margin:"auto 0"}}>
           <span style={{color:"#323E48",fontSize:14, fontWeight:600,paddingBottom:8}}>Незавершенные</span>
-          <DonutChartOnline/></div>
-      </div>
+          <DonutChartOnline/>
+          </div>
+      </div> */}
+      <ReportTableTags machines={machines}/>
       </>}
       {typeVal[2].active && <div>
         <Modal isOpen={openModal}

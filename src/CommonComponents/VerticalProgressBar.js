@@ -1,7 +1,8 @@
 import React from 'react'
 import "./CommonComponents.css"
 const VerticalProgressBar = ({data, width}) => {
-    const sum = data.reduce((acc, val) => acc + val.value, 0);
+    const sum = data.reduce((acc, val) => acc + val.value, 0 );
+    console.log(sum)
   return (
     <div className="verticalProgressBar" style={{width:width}}>
      {data?.map((i, index)=>{

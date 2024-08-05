@@ -1,8 +1,10 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import VerticalProgressBar from '../CommonComponents/VerticalProgressBar'
 import "./Stats.css"
 import axios from 'axios'
-const StatMeas = () => {
+const StatMeas = ({dataOk, setDataOk}) => {
+  const [dataLathe, setDataLathe] = useState([])
+  const [dataMilling, setDataMilling] = useState([])
   const today = new Date()
   const year = today.getFullYear()
   const dayQeary = String(today.getDate()).padStart(2, '0')
@@ -11,22 +13,59 @@ const StatMeas = () => {
 
   const fetchData = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_QUERY_MAIN}machines/worktime?from=2023-01-01T00:00&to2025-01-01T00:00:00&type=lathe`, {
-        headers: {
-          'access-control-allow-origin': '*',
-          'access-control-allow-credentials': 'true',
+      const response = await axios.get(
+        `${process.env.REACT_APP_QUERY_MAIN}machines/worktime?from=2022-01-01T00:00:00&to=2025-01-01T23:59:59&type=lathe`,
+        {
+          headers: {
+            'access-control-allow-origin': '*',
+            'access-control-allow-credentials': 'true'
+          }
         }
-      })
-     console.log(response.data)
+      );
+      const result = Object.keys(response.data).map(key => ({
+        key: key,
+        type: "lathe",
+        color:"#FFF",
+        backColor:response.data[key].color,
+        value:response.data[key].time?.toFixed(0),
+      }));
+      setDataLathe(result)
+    } catch (error) {
+      console.error(error)
+    }
+    try {
+      const response = await axios.get(
+        `${process.env.REACT_APP_QUERY_MAIN}machines/worktime?from=2022-01-01T00:00:00&to=2025-01-01T23:59:59&type=milling`,
+        {
+          headers: {
+            'access-control-allow-origin': '*',
+            'access-control-allow-credentials': 'true'
+          }
+        }
+      );
+      const result = Object.keys(response.data).map(key => ({
+        key: key,
+        type: "milling",
+        color:"#FFF",
+        backColor:response.data[key].color,
+        value:response.data[key].time?.toFixed(0),
+      }));
+      setDataMilling(result)
     } catch (error) {
       console.error(error)
     }
   }
-  useEffect(()=>{},[
+  useEffect(()=>{
     fetchData()
-  ])
+  },[]
+  )
+  useEffect(()=>{
+    console.log(dataLathe, dataMilling)
+  },[dataLathe, dataMilling])
   return (
     <div className='statMesContainer'>
+      {dataOk === true && 
+      <>
       <div style={{textAlign:"left"}} className='changesContainer'>
         <span className='statMesName'>Статистика станков</span>
       </div>
@@ -44,37 +83,38 @@ const StatMeas = () => {
         <div className='barsWrapper'>
           <div className='barChanger'>
             <span>75%</span>
-            <VerticalProgressBar width={"70%"} data={[{ value: 50, color: "#FFF", backColor: "#FF6347", id: 1 }, { value: 350, color: "#FFF", backColor: "#77CB10", id: 2 }, { value: 50, color: "#FFF", backColor: "#FF8C00", id: 3 }]} />
+            <VerticalProgressBar width={"70%"} data={dataLathe} />
           </div>
           <div className='barChanger'>
             <span>75%</span>
-            <VerticalProgressBar width={"70%"} data={[{ value: 50, color: "#FFF", backColor: "#FF6347", id: 1 }, { value: 350, color: "#FFF", backColor: "#77CB10", id: 2 }, { value: 50, color: "#FFF", backColor: "#FF8C00", id: 3 }]} />
+            <VerticalProgressBar width={"70%"} data={dataMilling} />
           </div>
         </div>
       <span className='changesName'>2 смена</span>
-        <div className='barsWrapper'>
+      <div className='barsWrapper'>
           <div className='barChanger'>
             <span>75%</span>
-            <VerticalProgressBar width={"70%"} data={[{ value: 50, color: "#FFF", backColor: "#FF6347", id: 1 }, { value: 350, color: "#FFF", backColor: "#77CB10", id: 2 }, { value: 50, color: "#FFF", backColor: "#FF8C00", id: 3 }]} />
+            <VerticalProgressBar width={"70%"} data={dataLathe} />
           </div>
           <div className='barChanger'>
             <span>75%</span>
-            <VerticalProgressBar width={"70%"} data={[{ value: 50, color: "#FFF", backColor: "#FF6347", id: 1 }, { value: 350, color: "#FFF", backColor: "#77CB10", id: 2 }, { value: 50, color: "#FFF", backColor: "#FF8C00", id: 3 }]} />
+            <VerticalProgressBar width={"70%"} data={dataMilling} />
           </div>
         </div>
       <span className='changesName'>1 смена</span>
-        <div className='barsWrapper'>
+      <div className='barsWrapper'>
           <div className='barChanger'>
             <span>75%</span>
-            <VerticalProgressBar width={"70%"} data={[{ value: 50, color: "#FFF", backColor: "#FF6347", id: 1 }, { value: 350, color: "#FFF", backColor: "#77CB10", id: 2 }, { value: 50, color: "#FFF", backColor: "#FF8C00", id: 3 }]} />
+            <VerticalProgressBar width={"70%"} data={dataLathe} />
           </div>
           <div className='barChanger'>
             <span>75%</span>
-            <VerticalProgressBar width={"70%"} data={[{ value: 50, color: "#FFF", backColor: "#FF6347", id: 1 }, { value: 350, color: "#FFF", backColor: "#77CB10", id: 2 }, { value: 50, color: "#FFF", backColor: "#FF8C00", id: 3 }]} />
+            <VerticalProgressBar width={"70%"} data={dataMilling} />
           </div>
         </div>
       </div>
       </div>
+      </>}
     </div>
   )
 }
