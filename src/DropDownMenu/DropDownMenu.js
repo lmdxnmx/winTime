@@ -3,7 +3,7 @@ import s from "./dropDownMenu.module.css";
 import { Checkbox } from '@consta/uikit/Checkbox';
 import { IconArrowDown } from "@consta/icons/IconArrowDown"
 import { IconArrowUp } from "@consta/icons/IconArrowUp"
-const DropDownMenu = ({ label, refs, width, isOpen, setIsOpen, value, setValue,machines, setFilteredRows, rows, changes, setChanges }) => {
+const DropDownMenu = ({ label, refs, width, isOpen, setIsOpen, value, setValue,machines, setFilteredRows, rows, changes, setChanges, type, setType }) => {
     const [valueMachines, setValueMachines] = useState([
         { label: "DOOSAN 2600LY", active: true, id: 1 }, 
         { label: "DOOSAN 2700LY", active: true, id: 2 },
@@ -125,6 +125,19 @@ const DropDownMenu = ({ label, refs, width, isOpen, setIsOpen, value, setValue,m
         )
     }
     }
+    const getItemTypesOnClick = (item) => {
+        console.log(type,item)
+        setType(prevValue =>
+            prevValue.map(prevItem =>
+                prevItem.id === item.id
+                    ? { ...prevItem, active: true }
+                    : { ...prevItem, active: false }
+            )
+        );
+    };
+    
+   
+ 
 
     return (
         <div ref={refs} style={{ width: width, position:'relative' }} className={label !== "" && s.filterButton}>
@@ -139,6 +152,14 @@ const DropDownMenu = ({ label, refs, width, isOpen, setIsOpen, value, setValue,m
                         <div key={item.id} onClick={() => getItemMachinesOnClick(item)} className={s.dropDownItem}>
                             <Checkbox checked={item.active} className={s.dropDownCheckbox} />
                             <span>{item.label}</span>
+                        </div>
+                    ))
+                }
+                {label === "Все графики" && 
+                    type?.map((item) => (
+                        <div key={item.id} onClick={() => getItemTypesOnClick(item)} className={s.dropDownItem}>
+                               <Checkbox checked={item.active} className={s.dropDownCheckbox} />
+                            <span>{item.name}</span>
                         </div>
                     ))
                 }

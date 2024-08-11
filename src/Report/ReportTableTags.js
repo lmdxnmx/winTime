@@ -9,7 +9,9 @@ import axios from 'axios';
 import Calendar from "./../images/Calendar.svg"
 import ProgressBarTags from '../ProgressBar/PrograssBarTags';
 import CategoryChoose from '../CategoryChoose/CategoryChoose';
-export const ReportTableTags = ({ machines }) => {
+import LineChart from '../Charts/LineChart';
+import LineChartForTable from '../Charts/LineChartForTable';
+export const ReportTableTags = ({ machines, setOpenModal, setData }) => {
   const [changes, setChanges] = useState([{
     change: "1 смена",
     startTime: "00:00:00",
@@ -38,6 +40,7 @@ export const ReportTableTags = ({ machines }) => {
   const [machineTimeWork, setMachineTimeWork] = useState([]);
   const [isOpenMachines, setIsOpenMachines] = useState(false);
   const [categoriesColor, setCategoriesColors] = useState([]);
+  const [allStates, setAllStates] = useState([])
   const refDropMachines = useRef(null);
   const refDropChanges = useRef(null);
   const [timesIsView, setTimesIsView] = useState(false);
@@ -62,7 +65,8 @@ export const ReportTableTags = ({ machines }) => {
         try {
           const requests = machines.map(async mach => {
             const response = await axios.get(`${process.env.REACT_APP_QUERY_MAIN}machine/${mach.slug}/states?from=${currentDate}T00:00&to=${currentDate}T23:59&percent=true`);
-            return { machine: mach.slug, states: response.data.states, percents: response.data.percents };
+            const responseState = await axios.get(`${process.env.REACT_APP_QUERY_MAIN}machine/${mach.slug}/all-states`);
+            return { machine: mach.slug, states: response.data.states, percents: response.data.percents, allStates: responseState.data };
           });
 
           const machineTimeWorkData = await Promise.all(requests);
@@ -70,7 +74,7 @@ export const ReportTableTags = ({ machines }) => {
           if (isMounted) {
             setMachineTimeWork(prevState => [
               ...prevState,
-              ...machineTimeWorkData.map(({ machine, states, percents }) => ({ machine, states, percents }))
+              ...machineTimeWorkData.map(({ machine, states, percents, allStates }) => ({ machine, states, percents, allStates }))
             ]);
           }
         } catch (error) {
@@ -122,9 +126,7 @@ export const ReportTableTags = ({ machines }) => {
       return '23:59'
     }
   }
-  useEffect(() => {
-    console.log(machineTimeWork)
-  }, [machineTimeWork])
+
   const fetchData = async (date, startTime, finishTime) => {
     let newDate = currentDate;
     let newStartTime = "00:00";
@@ -143,17 +145,19 @@ export const ReportTableTags = ({ machines }) => {
       newFinishTime = finishTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
     try {
-      const requests = machines.map(async mach => {
+      const requests = machines.map(async mach => { 
         setMachineTimeWork([]);
         const response = await axios.get(`${process.env.REACT_APP_QUERY_MAIN}machine/${mach.slug}/states?from=${newDate}T${newStartTime}&to=${newDate}T${newFinishTime}&percent=true`);
-        return { machine: mach.slug, states: response.data.states, percents: response.data.percents };
+        const responseState = await axios.get(`${process.env.REACT_APP_QUERY_MAIN}machine/${mach.slug}/all-states`);
+            return { machine: mach.slug, states: response.data.states, percents: response.data.percents, allStates: responseState.data };
       });
 
       const machineTimeWorkData = await Promise.all(requests);
+      console.log(machineTimeWorkData)
 
       setMachineTimeWork(prevState => [
         ...prevState,
-        ...machineTimeWorkData.map(({ machine, states, percents }) => ({ machine, states, percents }))
+        ...machineTimeWorkData.map(({ machine, states, percents, allStates }) => ({ machine, states, percents, allStates }))
       ]);
       setFetchNewData(true);
       setSeeDate({ timeStart: timeStart, timeFinish: timeFinish });
@@ -182,6 +186,7 @@ export const ReportTableTags = ({ machines }) => {
         })
       ).then(statesArray => {
         const combinedStates = statesArray.flat(); // Combine states from all responses
+
         setCategoriesColors(prevState => {
           const updatedState = [...prevState];
           combinedStates.forEach(newState => {
@@ -192,61 +197,354 @@ export const ReportTableTags = ({ machines }) => {
           return updatedState;
         });
       
-      }).then(()=> {
-        // setIsLoading(false)
-    });
+      })
     }
   }, [machines]);
   useEffect(() => {
-    if (machineTimeWork.length > 0) {
-      const newData = machines.map(machine => {
-        const machineData = machineTimeWork.find(data => data.machine === machine.slug);
-        let loadDay = [];
-        let statusColor;
-
-        // Extracting only the timestamps from the states object
-        const timestamps = Object.keys(machineData.states);
-
-        machineData.percents.forEach((data, index) => {
-          switch (data[0]) {
-            case 'on':
-              statusColor = "#32CD32"; // green
-              break;
-            case 'off':
-              statusColor = "#FF8C00"; // orange
-              break;
-            case 'work':
-              statusColor = "#1E90FF"; // blue
-              break;
-            default:
-              statusColor = "#000000"; // black (default color)
-              break;
-          }
-
-          // Using the extracted timestamps
-          loadDay.push({
-            color: statusColor,
-            status: data[0],
-            percent: data[1] * 100,
-            start: timestamps[index], // Start timestamp
-            end: timestamps[index + 1],
-            machineName: machine.name
+    const fetchData = async () => {
+      let today = new Date();
+      let year = today.getFullYear();
+      let month = String(today.getMonth() + 1).padStart(2, '0');
+      let day = String(today.getDate()).padStart(2, '0');
+      let currentDate = `${year}-${month}-${day}`;
+  
+      if (dateValue !== null) {
+        const dateObj = new Date(dateValue);
+        year = dateObj.getFullYear();
+        month = String(dateObj.getMonth() + 1).padStart(2, '0');
+        day = String(dateObj.getDate()).padStart(2, '0');
+        currentDate = `${year}-${month}-${day}`;
+      }
+  
+      if (categoriesColor && categoriesColor.length > 0) {
+        const slugs = categoriesColor.map(category => category.slug);
+        const activeChanges = changes.filter(change => change.active);
+  
+        try {
+          let serverData = {};
+  
+          const fetchDataForChange = async (change) => {
+            const intervalTimes = generateTimesForChange(change);
+            const response = await axios.post(`${process.env.REACT_APP_QUERY_MAIN}machines/horizontal-view`, {
+              "machines": ["all"],
+              "states": slugs,
+              "times": intervalTimes.map(time => `${currentDate}T${time}`)
+            }, {
+              headers: {
+                'access-control-allow-origin': '*',
+                'access-control-allow-credentials': 'true',
+              }
+            });
+            return response.data.times;
+          };
+  
+          const generateTimesForChange = (change) => {
+            const generateHalfHourIntervals = (startHour, endHour) => {
+              const times = [];
+              for (let hour = startHour; hour <= endHour; hour++) {
+                times.push(`${String(hour).padStart(2, '0')}:00`);
+                times.push(`${String(hour).padStart(2, '0')}:30`);
+              }
+              return times;
+            };
+  
+            let times = [];
+            if (change.id === 1) {
+              times = generateHalfHourIntervals(0, 7);
+              times.push('08:00');
+            } else if (change.id === 2) {
+              times = generateHalfHourIntervals(8, 15);
+              times.push('16:00');
+            } else if (change.id === 3) {
+              times = generateHalfHourIntervals(16, 23);
+              times.push('23:59');
+            }
+            return times;
+          };
+  
+          const processData = (rawData) => {
+            const combinedData = {};
+            rawData.forEach((changeData) => {
+              Object.entries(changeData).forEach(([timestamp, values]) => {
+                if (!combinedData[timestamp]) {
+                  combinedData[timestamp] = values;
+                } else {
+                  for (const [key, value] of Object.entries(values)) {
+                    combinedData[timestamp][key] = (combinedData[timestamp][key] || 0) + value;
+                  }
+                }
+              });
+            });
+  
+            const uniqueTimestamps = [...new Set(Object.keys(combinedData))].sort();
+            const filteredData = {};
+            uniqueTimestamps.forEach((timestamp) => {
+              filteredData[timestamp] = combinedData[timestamp];
+            });
+  
+            return filteredData;
+          };
+  
+          const activeChangePromises = activeChanges.map(fetchDataForChange);
+          const rawData = await Promise.all(activeChangePromises);
+  
+          serverData = processData(rawData);
+  
+          const newAllData = categoriesColor.flatMap(category => {
+            return Object.keys(serverData).map(time => ({
+              Date: time.split(' ')[1],
+              scales: serverData[time]?.[category.slug],
+              type: category.label
+            }));
           });
+  
+          const filteredData = newAllData.filter(object => {
+            const category = categoriesColor.find(category => category.label === object.type);
+            return category && category.active;
+          });
+  
+  
+          return filteredData;
+        } catch (error) {
+          console.error('Ошибка при получении данных:', error);
+        }
+      }
+      return [];
+    };
+  
+    if (machineTimeWork.length > 0 && categoriesColor.length > 0) {
+      fetchData().then(serverData => {
+        const activeCategories = categoriesColor.filter(category => category.active);
+  
+        const newData = machines.map(machine => {
+          const machineData = machineTimeWork.find(data => data.machine === machine.slug);
+          let loadDay = [];
+          let statusColor;
+  
+          // Extracting only the timestamps from the states object
+          const timestamps = Object.keys(machineData.states);
+          console.log(timestamps)
+          machineData.percents.forEach((data, index) => {
+    
+              switch (data[0]) {
+                case 'on':
+                  statusColor = "#32CD32"; // green
+                  break;
+                case 'off':
+                  statusColor = "#FF8C00"; // orange
+                  break;
+                case 'work':
+                  statusColor = "#1E90FF"; // blue
+                  break;
+                default:
+                  statusColor = "#000000"; // black (default color)
+                  break;
+              }
+  
+              // Using the extracted timestamps
+              loadDay.push({
+                color: statusColor,
+                status: data[0],
+                percent: data[1] * 100,
+                start: timestamps[index], // Start timestamp
+                end: timestamps[index + 1],
+                machineName: machine.name
+              });
+            
+          });
+  
+          // Adding allStates.states to rows with their own loadDay if they are active
+          const rows = machineData.allStates.states.map(state => {
+            if (activeCategories.find(cat => cat.slug === state.slug)) {
+              let stateLoadDay = [];
+              let stateStatusColor;
+  
+              machineData.percents.forEach((data, index) => {
+                console.log(data,state.slug)
+                if (data[0] === state.slug) {
+                  switch (data[0]) {
+                    case 'on':
+                      stateStatusColor = "#32CD32"; // green
+                      break;
+                    case 'off':
+                      stateStatusColor = "#FF8C00"; // orange
+                      break;
+                    case 'work':
+                      stateStatusColor = "#1E90FF"; // blue
+                      break;
+                    default:
+                      stateStatusColor = "#000000"; // black (default color)
+                      break;
+                  }
+                }
+                else{
+                  stateStatusColor = "#CFD7DD"
+                }
+                  stateLoadDay.push({
+                    color: stateStatusColor,
+                    status: data[0],
+                    percent: data[1] * 100,
+                    start: timestamps[index], // Start timestamp
+                    end: timestamps[index + 1],
+                    machineName: machine.name
+                  });
+                
+              });
+              console.log(serverData,state.name)
+              const lineChartData = (serverData).map((time)=>{
+                return({
+                  Date: time.Date,
+                  scales: time.scales,
+                  type: time.type
+              })
+                
+              });
+              const data = lineChartData.filter(item => {
+                return item.type === state.name})
+                const sum = data.reduce((accumulator, currentValue) => accumulator + currentValue.scales, 0);
+            const average = sum / data.length;
+              return {
+                ...state,
+                loadDay: stateLoadDay,
+                lineChartData: average !== 0 ? data : []
+              };
+            } else {
+              return null; // Exclude inactive states
+            }
+          }).filter(row => row !== null); // Remove null entries
+  
+          return {
+            name: machine.name,
+            colorName: statusColor,
+            percent: 0,
+            loadDay: loadDay,
+            rows: rows // Adding the active states with their loadDay
+          };
         });
-
-        return {
-          name: machine.name,
-          colorName: statusColor,
-          percent: 0,
-          loadDay: loadDay,
-        };
+  
+        setRows(newData);
+        setFilteredRows(newData);
       });
-
-      setRows(newData);
-      setFilteredRows(newData);
     }
-  }, [machineTimeWork, machines, currentDate]);
+  }, [machineTimeWork, machines, currentDate, categoriesColor, dateValue, changes]);
+  
+  // useEffect(() => {
+  //   const fetchData = async () => {
 
+  //     let today = new Date();
+  //     let year = today.getFullYear();
+  //     let month = String(today.getMonth() + 1).padStart(2, '0');
+  //     let day = String(today.getDate()).padStart(2, '0');
+  //     let currentDate = `${year}-${month}-${day}`;
+
+  //     if (dateValue !== null) {
+  //       const dateObj = new Date(dateValue);
+  //       year = dateObj.getFullYear();
+  //       month = String(dateObj.getMonth() + 1).padStart(2, '0');
+  //       day = String(dateObj.getDate()).padStart(2, '0');
+  //       currentDate = `${year}-${month}-${day}`;
+  //     }
+
+  //     if (categoriesColor && categoriesColor.length > 0) {
+  //       const slugs = categoriesColor.map(category => category.slug);
+  //       const activeChanges = changes.filter(change => change.active);
+
+  //       try {
+  //         let serverData = {};
+
+  //         const fetchDataForChange = async (change) => {
+  //           const intervalTimes = generateTimesForChange(change);
+  //           const response = await axios.post(`${process.env.REACT_APP_QUERY_MAIN}machines/horizontal-view`, {
+  //             "machines": ["all"],
+  //             "states": slugs,
+  //             "times": intervalTimes.map(time => `${currentDate}T${time}`)
+  //           }, {
+  //             headers: {
+  //               'access-control-allow-origin': '*',
+  //               'access-control-allow-credentials': 'true',
+  //             }
+  //           });
+  //           console.log(response)
+  //           return response.data.times;
+  //         };
+
+  //         const generateTimesForChange = (change) => {
+  //           const generateHalfHourIntervals = (startHour, endHour) => {
+  //             const times = [];
+  //             for (let hour = startHour; hour <= endHour; hour++) {
+  //               times.push(`${String(hour).padStart(2, '0')}:00`);
+  //               times.push(`${String(hour).padStart(2, '0')}:30`);
+  //             }
+  //             return times;
+  //           };
+
+  //           let times = [];
+  //           if (change.id === 1) {
+  //             times = generateHalfHourIntervals(0, 7);
+  //             times.push('08:00');
+  //           } else if (change.id === 2) {
+  //             times = generateHalfHourIntervals(8, 15);
+  //             times.push('16:00');
+  //           } else if (change.id === 3) {
+  //             times = generateHalfHourIntervals(16, 23);
+  //             times.push('23:59');
+  //           }
+  //           return times;
+  //         };
+
+  //         const processData = (rawData) => {
+  //           const combinedData = {};
+  //           rawData.forEach((changeData) => {
+  //             Object.entries(changeData).forEach(([timestamp, values]) => {
+  //               if (!combinedData[timestamp]) {
+  //                 combinedData[timestamp] = values;
+  //               } else {
+  //                 for (const [key, value] of Object.entries(values)) {
+  //                   combinedData[timestamp][key] = (combinedData[timestamp][key] || 0) + value;
+  //                 }
+  //               }
+  //             });
+  //           });
+
+  //           const uniqueTimestamps = [...new Set(Object.keys(combinedData))].sort();
+  //           const filteredData = {};
+  //           uniqueTimestamps.forEach((timestamp) => {
+  //             filteredData[timestamp] = combinedData[timestamp];
+  //           });
+
+  //           return filteredData;
+  //         };
+
+  //         const activeChangePromises = activeChanges.map(fetchDataForChange);
+  //         const rawData = await Promise.all(activeChangePromises);
+
+  //         serverData = processData(rawData);
+
+  //         const newAllData = categoriesColor.flatMap(category => {
+  //           return Object.keys(serverData).map(time => ({
+  //             Date: time.split(' ')[1],
+  //             scales: serverData[time]?.[category.slug],
+  //             type: category.label
+  //           }));
+  //         });
+
+  //         const filteredData = newAllData.filter(object => {
+  //           const category = categoriesColor.find(category => category.label === object.type);
+  //           return category && category.active;
+  //         });
+
+  //         setLineChartData(filteredData);
+
+  //       } catch (error) {
+  //         console.error('Ошибка при получении данных:', error);
+  //       }
+  //     }
+  //   };
+
+  //   if (categoriesColor !== null) {
+  //     fetchData();
+  //   }
+  // }, [categoriesColor, dateValue, changes]); 
 
   const [filteredRows, setFilteredRows] = useState(rows)
   const columns = [
@@ -268,15 +566,19 @@ export const ReportTableTags = ({ machines }) => {
       align: "center",
       sortable: false,
       renderCell: (row) => (
-        <div className={`${s.progress_cell}`} >
-          {fetchNewData === true && (seeDate.timeStart !== null || seeDate.timeFinish !== null) ?
 
-            <ProgressBarTags viewTooltip={true} label={row.loadDay} date={[getTimeFromStart(seeDate.timeStart), getTimeFromFinish(seeDate.timeFinish)]} /> : <ProgressBarTags viewTooltip={true} label={row.loadDay} date={["00:00",
+        <div className={`${s.progress_cell}`} onClick={()=>{
+          setOpenModal(true)
+          setData({loadDay:row.loadDay, start:getTimeFromStart(seeDate.timeStart), finish: getTimeFromFinish(seeDate.timeFinish)})
+          }}>
+          {fetchNewData === true && (seeDate.timeStart !== null || seeDate.timeFinish !== null) ?
+           
+            <ProgressBarTags  label={row.loadDay} date={[getTimeFromStart(seeDate.timeStart), getTimeFromFinish(seeDate.timeFinish)]} /> : <ProgressBarTags  label={row.loadDay} date={["00:00",
               "06:00",
               "12:00",
               "18:00",
               "23:59",]} />}
-
+             {row.options.level === 1 && row.lineChartData.length > 0 && <LineChartForTable categoriesColor={categoriesColor} data={row.lineChartData}/>}
         </div>
       ),
       width: 812
@@ -336,7 +638,9 @@ export const ReportTableTags = ({ machines }) => {
   useEffect(() => {
     console.log(machineTimeWork)
   }, [machineTimeWork])
-
+useEffect(()=>{
+  console.log(categoriesColor)
+},[categoriesColor])
   return (<><div style={{ minHeight: "50vh" }}>
     <div className={s.filterTable}>
       <div style={{ display: 'flex', flexDirection: 'column' }} onClick={() => setTimesIsView(false)}>

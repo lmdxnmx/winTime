@@ -8,7 +8,7 @@ import { DatePicker } from '@consta/uikit/DatePicker';
 import axios from 'axios';
 import Calendar from "./../images/Calendar.svg"
 import ProgressBarTags from '../ProgressBar/PrograssBarTags';
-export const ReportTableStates = ({ machines }) => {
+export const ReportTableStates = ({ machines, setOpenModal, setData, graphType, setGraphType }) => {
   const [changes, setChanges] = useState([{
     change: "1 смена",
     startTime: "00:00:00",
@@ -34,6 +34,8 @@ export const ReportTableStates = ({ machines }) => {
   const [timeFinish, setTimeFinish] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
   const [isOpenChanges, setIsOpenChanges] = useState(false);
+  const refDropType = useRef(null)
+  const [isOpenType, setIsOpenType] = useState(false)
   const [machineTimeWork, setMachineTimeWork] = useState([]);
   const [isOpenMachines, setIsOpenMachines] = useState(false);
   const refDropMachines = useRef(null);
@@ -234,9 +236,12 @@ export const ReportTableStates = ({ machines }) => {
       align: "center",
       sortable: false,
       renderCell: (row) => (
-        <div className={`${s.progress_cell}`} >
+        <div className={`${s.progress_cell}`} onClick={()=>{
+          setOpenModal(true)
+          setData({loadDay:row.loadDay, start:getTimeFromStart(seeDate.timeStart), finish: getTimeFromFinish(seeDate.timeFinish)})
+          }}>
           {fetchNewData === true && (seeDate.timeStart !== null || seeDate.timeFinish !== null) ?
-
+           
             <ProgressBarTags viewTooltip={true} label={row.loadDay} date={[getTimeFromStart(seeDate.timeStart), getTimeFromFinish(seeDate.timeFinish)]} /> : <ProgressBarTags viewTooltip={true} label={row.loadDay} date={["00:00",
               "06:00",
               "12:00",
@@ -305,6 +310,16 @@ export const ReportTableStates = ({ machines }) => {
 
   return (<><div style={{ minHeight: "50vh" }}>
     <div className={s.filterTable}>
+    <div style={{ display: 'flex', flexDirection: 'column' }} onClick={() => setTimesIsView(false)}>
+        <span style={{ color: "#00203399", textAlign: 'left', paddingBottom: 4, fontSize: 14 }}>Тип графика</span>
+      <DropDownMenu refs={refDropType} width={352}
+label={"Все графики"}
+ isOpen={isOpenType}
+          setIsOpen={setIsOpenType}
+          type={graphType}
+          setType={setGraphType}
+         />
+      </div>
       <div style={{ display: 'flex', flexDirection: 'column' }} onClick={() => setTimesIsView(false)}>
         <span style={{ color: "#00203399", textAlign: 'left', paddingBottom: 4, fontSize: 14 }}>Оборудование</span>
         <DropDownMenu width={352}

@@ -14,19 +14,38 @@ import ProgressBarTags from '../ProgressBar/PrograssBarTags';
 import axios from 'axios';
 import { ReportTableStates } from '../Report/ReportTableStates';
 import { ReportTableTags } from '../Report/ReportTableTags';
+import s from "./../TableItem/TableItem.module.css"
+import Calendar from "./../images/Calendar.svg"
+
 const ReportsPage = () => {
   const [typeVal, setTypeVal] = useState([{ name: "Отчет по загрузке", active: true, size: 16 }, { name: "Выполненные операции", active: false, size: 16 }, { name: "Анализ тегов", active: false, size: 16 },{ name: "Учет инструментов", active: false, size: 16 }])
   const [dateValue, setDateValue] = useState(null);
-  const [timeValue, setTimeValue] = useState(null);
+  const [dateFinishValue, setDateFinishValue] = useState(null);
+  const [newQueryFlag, setNewQueryFlag] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [timeStart, setTimeStart] = useState(null);
+  const [timeFinish, setTimeFinish] = useState(null);
+  const [timesIsView, setTimesIsView] = useState(false);
+  let today = new Date();
+  let year = today.getFullYear();
+  let month = String(today.getMonth() + 1).padStart(2, '0');
+  let day = String(today.getDate()).padStart(2, '0');
+  let currentDate = `${year}-${month}-${day}`;
+  const dayQeary = String(today.getDate()).padStart(2, '0');
+  const monthQearu = String(today.getMonth() + 1).padStart(2, '0');
+  const [minDate, setMinDate] = useState(new Date(year, month, day));
+  const [maxDate, setMaxDate] = useState(new Date(year, month, day));
+  const [fetchNewData, setFetchNewData] = useState(false);
   const [openModal, setOpenModal] = useState(false)
-  const data =[{
+  const [graphType, setGraphType] = useState([{type:"column", name:"Вертикальный график",active:true, id:1},{type:'row', name:'Горизонтальный график',active:false, id:2}])
+  const [data, setData] =useState([{
     color: "#FF8C00",
     percent: 10,
   },
-  { color: "#32CD32", percent: 35 }]
+  { color: "#32CD32", percent: 35 }])
   const [isOpenChanges, setIsOpenChanges] = useState(false);
   const [isOpenMachines, setIsOpenMachines] = useState(false);
+  const refDropType = useRef(null)
   const refDropMachines = useRef(null);
   const refDropChanges = useRef(null);
   const [machines, setMachines] = useState([]);
@@ -243,11 +262,7 @@ const ReportsPage = () => {
       width:130
     },
   ];
-  let today = new Date();
-  let year = today.getFullYear();
-  let month = String(today.getMonth() + 1).padStart(2, '0');
-  let day = String(today.getDate()).padStart(2, '0');
-  let currentDate = `${year}-${month}-${day}`;
+
   
   const fetchDataForChange = async (change) => {
 
@@ -275,14 +290,80 @@ const ReportsPage = () => {
         <SwitchButtons val={typeVal} setVal={setTypeVal} />
       </div>
 
-      {typeVal[0].active &&<><div className='columnContainer'>
+      {typeVal[0].active &&<>
+      {graphType[0].active === true && <> <div className={s.filterTable}>
+      <div style={{ display: 'flex', flexDirection: 'column' }} onClick={() => setTimesIsView(false)}>
+        <span style={{ color: "#00203399", textAlign: 'left', paddingBottom: 4, fontSize: 14 }}>Тип графика</span>
+      <DropDownMenu refs={refDropType} width={352}
+label={"Все графики"}
+ isOpen={isOpenMachines}
+          setIsOpen={setIsOpenMachines}
+          type={graphType}
+          setType={setGraphType}
+         />
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column' }} onClick={() => setTimesIsView(false)}>
+        <span style={{ color: "#00203399", textAlign: 'left', paddingBottom: 4, fontSize: 14 }}>Дата начала</span>
+        <div style={{ position: "relative" }}>
+          <DatePicker style={{ width: 118 }} className={s.datePicker} size="s" placeholder="Сегодня" dropdownOpen={isOpen} type="date" value={dateValue} onChange={setDateValue} maxDate={maxDate} />
+          <img style={{ position: "absolute", top: '37.5%', right: "22%" }} src={Calendar} width={10} height={10} />
+        </div>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column' }} onClick={() => setTimesIsView(false)}>
+        <span style={{ color: "#00203399", textAlign: 'left', paddingBottom: 4, fontSize: 14 }}>Дата конца</span>
+        <div style={{ position: "relative" }}>
+          <DatePicker style={{ width: 118 }} className={s.datePicker} size="s" placeholder="Сегодня" dropdownOpen={isOpen} type="date" value={dateFinishValue} onChange={setDateFinishValue} />
+          <img style={{ position: "absolute", top: '37.5%', right: "22%" }} src={Calendar} width={10} height={10} />
+        </div>
+      </div>
+    
+     
+      {(dateValue !== null || timeStart !== null || timeFinish !== null) &&
+        <div style={{ backgroundColor: "#4682B4", display: 'flex', marginTop: 'auto', height: '32px', borderRadius: "10px", width: '60px', justifyContent: 'center', alignItems: 'center' }} onClick={() => {
+          setNewQueryFlag(!newQueryFlag)
+        }}>
+          <span style={{ fontSize: 14, color: 'white', padding: 8, textAlign: 'center', fontWeight: 700 }}>OK</span>
+        </div>}
+    </div>
+      <div className='columnContainer'>
         <h1 className='title' style={{marginBottom:32}}>Группа 1</h1>
-        <ColumnChart changeData={null} type={"lathe"}/>
+        <ColumnChart changeData={null} type={"lathe"} startDate={dateValue} finishDate={dateFinishValue} newQueryFlag={newQueryFlag}/>
       </div>
       <div className='columnContainer'>
         <h1 className='title' style={{marginBottom:32}}>Группа 2</h1>
-        <ColumnChart changeData={null} type={"milling"}/>
-      </div></>}
+        <ColumnChart changeData={null} type={"milling"} startDate={dateValue} finishDate={dateFinishValue} newQueryFlag={newQueryFlag}/>
+      </div>
+      </>}
+      {graphType[1].active === true && 
+      <div>
+        <Modal isOpen={openModal}
+      hasOverlay
+      onClickOutside={() => setOpenModal(false)}
+      onEsc={() => setOpenModal(false)}
+    >
+      <div style={{ height: "182px", width: 450,paddingLeft:"24px",paddingRight:"24px" }}>
+        <h3>Холостой ход</h3>
+        <div style={{display:'flex',justifyContent:'space-between'}}>
+        <span style={{color:'#002033',fontSize:'12px',paddingTop:'16px'}}>Период времени</span>
+        <span style={{color:'#002033',fontSize:'12px',paddingTop:'16px'}}>07:38-08:43</span>
+        </div>
+        <div style={{display:'flex',justifyContent:'space-between'}}>
+        <span style={{color:'#002033',fontSize:'12px',paddingTop:'16px'}}>Программа</span>
+        <span style={{color:'#002033',fontSize:'12px',paddingTop:'16px'}}>Xty-peo344</span>
+        </div>
+        <div style={{display:'flex',width:'100%',alignItems: 'center',marginTop:16}}>
+
+          <div style={{ display: 'flex', flexDirection: 'column',width:'100%',marginLeft:24 }}> 
+          <ProgressBar label={data.loadDay} date={[data.start, data.finish]}/>
+       
+          </div>
+          </div>
+        </div></Modal>
+        <div>
+          <ReportTableStates graphType={graphType} setGraphType={setGraphType}  setData={setData} machines={machines} setOpenModal={setOpenModal} />
+          </div></div>}
+      </>}
       {typeVal[1].active &&<>
       {/* <div className='columnContainer' style={{display:'flex'}}>
         <div style={{display:'flex',flexDirection:'column',width:'33%',height:"250px",margin:"auto 0"}}>
@@ -296,10 +377,7 @@ const ReportsPage = () => {
           <DonutChartOnline/>
           </div>
       </div> */}
-      <ReportTableTags machines={machines}/>
-      </>}
-      {typeVal[2].active && <div>
-        <Modal isOpen={openModal}
+      <Modal isOpen={openModal}
       hasOverlay
       onClickOutside={() => setOpenModal(false)}
       onEsc={() => setOpenModal(false)}
@@ -317,20 +395,44 @@ const ReportsPage = () => {
         <div style={{display:'flex',width:'100%',alignItems: 'center',marginTop:16}}>
 
           <div style={{ display: 'flex', flexDirection: 'column',width:'100%',marginLeft:24 }}> 
-          <ProgressBar label={data}/>
-            <div className={ss.load_time}>
-              <span>07:33</span>
-              <span>07:53</span>
-              <span>08:13</span>
-              <span>08:33</span>
-              <span>08:53</span>
-            </div>
+          <ProgressBar label={data.loadDay} date={[data.start, data.finish]}/>
+      
           </div>
           </div>
         </div></Modal>
-        <div onClick={()=>setOpenModal(true)}>
-          <ReportTableStates machines={machines} />
-          </div></div>}
+        <div>
+        <ReportTableTags setData={setData} machines={machines} setOpenModal={setOpenModal}/>
+          </div>
+      </>}
+      {typeVal[2].active && <>
+           <Modal isOpen={openModal}
+           hasOverlay
+           onClickOutside={() => setOpenModal(false)}
+           onEsc={() => setOpenModal(false)}
+         >
+           <div style={{ height: "182px", width: 450,paddingLeft:"24px",paddingRight:"24px" }} onClick={() => setOpenModal(true)}>
+             <h3>Холостой ход</h3>
+             <div style={{display:'flex',justifyContent:'space-between'}}>
+             <span style={{color:'#002033',fontSize:'12px',paddingTop:'16px'}}>Период времени</span>
+             <span style={{color:'#002033',fontSize:'12px',paddingTop:'16px'}}>07:38-08:43</span>
+             </div>
+             <div style={{display:'flex',justifyContent:'space-between'}}>
+             <span style={{color:'#002033',fontSize:'12px',paddingTop:'16px'}}>Программа</span>
+             <span style={{color:'#002033',fontSize:'12px',paddingTop:'16px'}}>Xty-peo344</span>
+             </div>
+             <div style={{display:'flex',width:'100%',alignItems: 'center',marginTop:16}}>
+     
+               <div style={{ display: 'flex', flexDirection: 'column',width:'100%',marginLeft:24 }}> 
+               <ProgressBar label={data.loadDay} date={[data.start, data.finish]}/>
+           
+               </div>
+               </div>
+             </div></Modal>
+             <div>
+             <ReportTableTags setData={setData} machines={machines} setOpenModal={setOpenModal}/>
+               </div>
+               </>
+          }
       {typeVal[3].active && <div className='columnContainer'>
         <ColumnChart2/>
       </div>}

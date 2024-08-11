@@ -2,21 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { Column } from '@consta/charts/Column';
 import axios from 'axios';
 
-const ColumnChart = ({ changeData, type }) => {
+const ColumnChart = ({ changeData, type, startDate, finishDate, newQueryFlag }) => {
   const [data, setData] = useState([]);
 
   const fetchUsersState = async () => {
-    const today = new Date();
     const dates = [];
+    const currentDate = new Date(startDate);
 
-    for (let i = 0; i < 4; i++) {
-      const date = new Date(today);
-      date.setDate(today.getDate() - i);
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
+    while (currentDate <= new Date(finishDate)) {
+      const year = currentDate.getFullYear();
+      const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+      const day = String(currentDate.getDate()).padStart(2, '0');
       const formattedDate = `${day}.${month}`;
-      dates.push({ date: formattedDate, queryDate: `${month}-${day}` });
+      dates.push({ date: formattedDate, queryDate: `${year}-${month}-${day}` });
+
+      currentDate.setDate(currentDate.getDate() + 1);
     }
 
     let combinedData = [];
@@ -27,7 +27,7 @@ const ColumnChart = ({ changeData, type }) => {
 
       try {
         const response = await axios.get(
-          `${process.env.REACT_APP_QUERY_MAIN}machines/worktime?from=2022-${queryDate}T${newStartTime}&to=2025-${queryDate}T${newFinishTime}&type=${type}`,
+          `${process.env.REACT_APP_QUERY_MAIN}machines/worktime?from=${queryDate}T${newStartTime}&to=${queryDate}T${newFinishTime}&type=${type}`,
           {
             headers: {
               'access-control-allow-origin': '*',
@@ -41,7 +41,7 @@ const ColumnChart = ({ changeData, type }) => {
           date: date,
           ...response.data[key]
         }));
-
+       console.log(response)
         combinedData = [...combinedData, ...result];
       } catch (error) {
         console.error(error);
@@ -53,11 +53,8 @@ const ColumnChart = ({ changeData, type }) => {
 
   useEffect(() => {
     fetchUsersState();
-  }, []);
-
-  useEffect(() => {
-    console.log(data);
-  }, [data]);
+    console.log("query")
+  }, [newQueryFlag]);
 
   return (
     <Column
@@ -65,7 +62,7 @@ const ColumnChart = ({ changeData, type }) => {
       xField="date"
       yField="time"
       seriesField="color"
-      color={({ color }) =>{ return color}}
+      color={({ color }) => color}
       isStack
       legend={false} // Убираем легенду
     />

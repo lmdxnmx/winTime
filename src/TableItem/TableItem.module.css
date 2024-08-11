@@ -32,7 +32,6 @@
     flex:2;
     justify-content: center;
     flex-direction: column;
-    max-height:120px;
 }
 .title{
     text-align: left;
